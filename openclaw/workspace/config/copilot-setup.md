@@ -1,11 +1,13 @@
 # API 모델 연동 가이드 (v11 — 3-Model Economy)
 
 ## 사전 준비
-`.env` 파일에 3개 API 키를 설정:
+`.env` 파일에 필수 환경 변수를 설정:
 ```bash
 ANTHROPIC_API_KEY=sk-ant-...
 GOOGLE_AI_API_KEY=AIza...
 KIMI_API_KEY=sk-...
+TELEGRAM_BOT_TOKEN=123456:ABC...
+GATEWAY_TOKEN=...
 ```
 
 ## 모델 확인
@@ -40,3 +42,4 @@ curl -s https://api.moonshot.cn/v1/chat/completions \
 - API 키는 반드시 `.env`에만 저장 (코드에 하드코딩 금지)
 - 30일마다 `scripts/rotate-keys.sh`로 키 교체
 - 속도 제한: `openclaw.json`의 `rateLimiting` 참조
+- 설정 검증: `jq empty ../openclaw.json`으로 JSON 유효성 확인
