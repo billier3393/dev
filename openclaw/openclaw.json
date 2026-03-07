@@ -63,7 +63,7 @@
             "outputPrice": 0.60,
             "thinkingInputPrice": 0.15,
             "thinkingOutputPrice": 1.25,
-            "contextWindow": 1048576,
+            "contextWindow": 200000,
             "maxOutput": 65536
           }
         }
@@ -493,5 +493,82 @@
   },
   "skills": {
     "load": { "watch": true }
+  },
+  "contextManagement": {
+    "globalLimitTokens": 200000,
+    "chunkingPolicy": {
+      "enabled": true,
+      "chunkSizeTokens": 180000,
+      "overlapTokens": 2000,
+      "summaryModel": "google/gemini-2.5-flash",
+      "summaryPrompt": "다음 청크의 핵심 내용을 3~5문장으로 요약하라. 수식·코드·수치는 반드시 보존할 것.",
+      "mergeStrategy": "sequential-summary"
+    },
+    "protectedContext": {
+      "alwaysLoad": [
+        "SOUL.md",
+        "USER.md",
+        "GOVERNANCE.md",
+        "IDENTITY.md",
+        "MEMORY.md",
+        "AGENTS.md",
+        "HEARTBEAT.md",
+        "config/copilot-setup.md",
+        "config/project-setup.md",
+        "teams/ROSTER.md",
+        "memory/user_commands.jsonl",
+        "memory/budget_tracker.json"
+      ],
+      "neverRAG": true
+    }
+  },
+  "rag": {
+    "enabled": true,
+    "backend": "devrag",
+    "devrag": {
+      "indexDir": "rag/index",
+      "embeddingModel": "all-MiniLM-L6-v2",
+      "device": "mps",
+      "mpsFallback": true,
+      "topK": 5,
+      "scoreThreshold": 0.65,
+      "chunkSize": 512,
+      "chunkOverlap": 64
+    },
+    "indexable": [
+      "chains/*/SKILL.md",
+      "shared/artifacts/**",
+      "shared/handoffs/**",
+      "chains/logs/**",
+      "research/**",
+      "code/**",
+      "reports/**",
+      "analysis/**",
+      "creative/**",
+      "security/**",
+      "optimization/**",
+      "teams/governance_log.md"
+    ],
+    "protected": [
+      "SOUL.md",
+      "USER.md",
+      "GOVERNANCE.md",
+      "IDENTITY.md",
+      "MEMORY.md",
+      "AGENTS.md",
+      "HEARTBEAT.md",
+      "CHAIN_REGISTRY.md",
+      "TOOLS.md",
+      "openclaw.json",
+      "config/**",
+      "teams/ROSTER.md",
+      "memory/**",
+      "scripts/**"
+    ],
+    "autoReindex": {
+      "enabled": true,
+      "watchPaths": ["shared/artifacts", "shared/handoffs", "research", "reports"],
+      "debounceSeconds": 30
+    }
   }
 }

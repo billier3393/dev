@@ -323,3 +323,45 @@ phases:
     action: skills/ 디렉토리에 등록
 output: skills/
 ```
+
+### 13. rag-chain (RAG 인덱싱 체인)
+```yaml
+id: rag-chain
+trigger: "RAG 재인덱스" 또는 자동 (세션 시작, 6시간 경과)
+phases:
+  - name: "보호 파일 확인"
+    chat: CEO (단독)
+    action: rag/protected-files.txt 로드, 인덱싱 제외 목록 확정
+  - name: "인덱싱"
+    chat: dev-automation (단독)
+    action: bash scripts/rag-index.sh (M1 MPS 최적화)
+  - name: "검증"
+    chat: testing-validator (단독)
+    action: 인덱스 무결성 확인, 보호 파일 누락 여부 검증
+  - name: "완료 알림"
+    chat: CEO → broadcast
+    action: 인덱싱 완료 알림, 파일 수·시간 보고
+output: rag/index/
+note: "⚠️ 보호 파일(SOUL.md, USER.md, GOVERNANCE.md 등)은 절대 인덱싱 금지"
+```
+
+### 14. context-split-chain (200k 초과 분할처리 체인)
+```yaml
+id: context-split-chain
+trigger: 자동 (컨텍스트 > 180k 토큰 감지)
+phases:
+  - name: "분할"
+    chat: context-compactor (단독)
+    action: bash scripts/context-split.sh --chunk-size 180000 --overlap 2000
+  - name: "청크 처리"
+    chat: [해당 에이전트] (순차)
+    action: 각 청크를 독립적으로 처리
+  - name: "요약 통합"
+    chat: [해당 팀 리드]
+    action: 청크별 요약 → 통합 요약 생성
+  - name: "계속"
+    chat: CEO (단독)
+    action: 통합 요약으로 후속 처리 재개
+output: shared/handoffs/split_summary_*.md
+note: "수식·코드·수치는 요약에서 원문 그대로 보존"
+```
