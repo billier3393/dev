@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-echo "🏢 OpenClaw 만능 팀 초기화 (v10 ChatChain)"
+echo "🏢 OpenClaw 만능 팀 초기화 (v11 ChatChain)"
 echo "============================================"
 
 # 디렉토리 생성
@@ -24,7 +24,7 @@ echo "  보안팀: Lead + Auditor + Monitor (3명)"
 echo "  테스팅팀: Lead + Functional + Validator (3명)"
 echo "  최적화팀: Lead + Perf + Process (3명)"
 echo ""
-echo "  총 에이전트: 27명"
+echo "  총 에이전트: 28명"
 echo ""
 echo "✅ 팀 시작 준비 완료"
 echo "👑 동우님, 명령을 내려주세요."

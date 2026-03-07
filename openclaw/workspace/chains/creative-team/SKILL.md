@@ -7,8 +7,8 @@ user-invocable: true
 
 ## 에이전트
 - **[Creative-Lead]** (`creative-lead`, Kimi K2.5): 방향 설정, 브레인스토밍
-- **[Creative-Content]** (`creative-content`, Kimi K2.5): 카피라이팅, 콘텐츠 기획
-- **[Creative-Design]** (`creative-design`, Haiku 4.5): UI/비주얼 디자인
+- **[Creative-Content]** (`creative-content`, Gemini Flash): 카피라이팅, 콘텐츠 기획
+- **[Creative-Design]** (`creative-design`, Gemini Flash): UI/비주얼 디자인
 
 ## 브레인스토밍 프로토콜
 1. 목표 명확화

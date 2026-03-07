@@ -6,7 +6,7 @@ user-invocable: true
 # 문서 보고서 팀
 
 ## 에이전트
-- **[Docs-Lead]** (`docs-lead`, Haiku 4.5): 문서 전략, 템플릿, 품질 검수
+- **[Docs-Lead]** (`docs-lead`, Gemini Flash): 문서 전략, 템플릿, 품질 검수
 - **[Docs-Writer]** (`docs-writer`, Kimi K2.5): 보고서·매뉴얼·가이드 작성
 - **[Docs-Formatter]** (`docs-formatter`, Gemini Flash): 포맷팅, LaTeX, 마크다운
 

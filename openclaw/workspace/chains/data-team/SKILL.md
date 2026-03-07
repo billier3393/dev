@@ -8,7 +8,7 @@ user-invocable: true
 ## 에이전트
 - **[Data-Lead]** (`data-lead`, Kimi K2.5): 분석 설계, 통계 모델링, 인사이트
 - **[Data-Engineer]** (`data-engineer`, Haiku 4.5): 데이터 파이프라인, ETL, 정제
-- **[Data-Viz]** (`data-viz`, Kimi K2.5): 시각화, 차트, 대시보드
+- **[Data-Viz]** (`data-viz`, Gemini Flash): 시각화, 차트, 대시보드
 
 ## 분석 워크플로
 1. 데이터 수집·정제 (Data-Engineer)

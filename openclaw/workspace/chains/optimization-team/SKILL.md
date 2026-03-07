@@ -6,9 +6,9 @@ user-invocable: true
 # 지속최적화팀
 
 ## 에이전트
-- **[Optim-Lead]** (`optim-lead`, Haiku 4.5): 최적화 전략, 성능 분석
+- **[Optim-Lead]** (`optim-lead`, Gemini Flash): 최적화 전략, 성능 분석
 - **[Optim-Perf]** (`optim-perf`, Gemini Flash): 토큰·속도·비용 최적화
-- **[Optim-Process]** (`optim-process`, Kimi K2.5): 워크플로 개선, 병목 분석
+- **[Optim-Process]** (`optim-process`, Gemini Flash): 워크플로 개선, 병목 분석
 
 ## 최적화 영역
 1. **토큰 최적화**: 프롬프트 압축, diff 출력, 스킬 온디맨드

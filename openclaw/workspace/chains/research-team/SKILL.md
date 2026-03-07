@@ -7,7 +7,7 @@ user-invocable: true
 
 ## 에이전트
 - **[Research-Lead]** (`research-lead`, Kimi K2.5): 연구 방향, 플랜, 종합
-- **[Research-Web]** (`research-web`, Kimi K2.5): 웹·논문 검색, 최신 동향
+- **[Research-Web]** (`research-web`, Gemini Flash): 웹·논문 검색, 최신 동향
 - **[Research-Analyst]** (`research-analyst`, Kimi K2.5): 심층 분석, 비교, 수학 검증
 
 ## 리서치 플랜 템플릿
