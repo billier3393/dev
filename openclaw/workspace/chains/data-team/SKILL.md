@@ -6,7 +6,7 @@ user-invocable: true
 # 데이터 분석팀
 
 ## 에이전트
-- **[Data-Lead]** (`data-lead`, Kimi K2.5): 분석 설계, 통계 모델링, 인사이트
+- **[Data-Lead]** (`data-lead`, Haiku 4.5): 분석 설계, 통계 모델링, 인사이트 (분석 지시 시 PII 노출 가능 → 안전 모델)
 - **[Data-Engineer]** (`data-engineer`, Haiku 4.5): 데이터 파이프라인, ETL, 정제
 - **[Data-Viz]** (`data-viz`, Gemini Flash): 시각화, 차트, 대시보드
 

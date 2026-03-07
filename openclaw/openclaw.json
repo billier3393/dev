@@ -141,7 +141,7 @@
         "id": "ceo",
         "default": true,
         "name": "CEO",
-        "model": "kimi/kimi-k2.5",
+        "model": "anthropic/claude-haiku-4.5",
         "personalDir": "agents/ceo",
         "tools": {
           "allow": ["exec","read","write","edit","glob","grep","browser","sessions_spawn","sessions_send","sessions_list","sessions_history"]
@@ -177,7 +177,7 @@
       {
         "id": "research-lead",
         "name": "리서치 리드",
-        "model": "kimi/kimi-k2.5",
+        "model": "anthropic/claude-haiku-4.5",
         "personalDir": "agents/research-lead",
         "tools": {
           "allow": ["exec","read","write","edit","glob","grep","browser","sessions_spawn","sessions_send"]
@@ -242,7 +242,7 @@
       {
         "id": "docs-writer",
         "name": "문서 작성자",
-        "model": "kimi/kimi-k2.5",
+        "model": "google/gemini-2.5-flash",
         "personalDir": "agents/docs-writer",
         "tools": { "allow": ["exec","read","write","edit","glob","browser"], "deny": ["sessions_spawn"] }
       },
@@ -256,7 +256,7 @@
       {
         "id": "data-lead",
         "name": "데이터 리드",
-        "model": "kimi/kimi-k2.5",
+        "model": "anthropic/claude-haiku-4.5",
         "personalDir": "agents/data-lead",
         "tools": {
           "allow": ["exec","read","write","edit","glob","grep","sessions_spawn","sessions_send"]
@@ -280,7 +280,7 @@
       {
         "id": "creative-lead",
         "name": "크리에이티브 리드",
-        "model": "kimi/kimi-k2.5",
+        "model": "google/gemini-2.5-flash",
         "personalDir": "agents/creative-lead",
         "tools": {
           "allow": ["exec","read","write","edit","glob","grep","browser","sessions_spawn","sessions_send"]

@@ -1,0 +1,46 @@
+# =============================================================
+# .gitignore — OpenClaw v11
+# =============================================================
+
+# API 키 및 환경 변수 (절대 커밋 금지)
+.env
+.env.*
+!.env.example
+
+# 암호화된 메모리 파일
+openclaw/workspace/memory/*.json
+openclaw/workspace/memory/*.jsonl
+
+# 보안 로그
+openclaw/workspace/security/
+
+# RAG 인덱스 (로컬 벡터 DB, 재생성 가능)
+openclaw/workspace/rag/index/
+openclaw/workspace/rag/embedding_cache/
+
+# 에이전트 개인 작업 공간 (임시 파일)
+openclaw/workspace/agents/*/scratch/
+openclaw/workspace/agents/*/inbox/
+openclaw/workspace/agents/*/outbox/
+
+# 배치 API 큐/결과 (임시)
+openclaw/workspace/shared/batch_queue/
+openclaw/workspace/shared/batch_results/
+
+# 체인 실행 로그 (로컬 전용)
+openclaw/workspace/chains/logs/
+
+# macOS 시스템 파일
+.DS_Store
+.DS_Store?
+**/.DS_Store
+
+# Python 캐시
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# 키 교체 로그 (보안)
+openclaw/workspace/memory/key_rotation_log.json

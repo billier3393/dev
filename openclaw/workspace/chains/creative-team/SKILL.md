@@ -6,7 +6,7 @@ user-invocable: true
 # 크리에이티브팀
 
 ## 에이전트
-- **[Creative-Lead]** (`creative-lead`, Kimi K2.5): 방향 설정, 브레인스토밍
+- **[Creative-Lead]** (`creative-lead`, Gemini Flash): 방향 설정, 브레인스토밍 (개인적 창작물 처리 가능 → 안전 모델)
 - **[Creative-Content]** (`creative-content`, Gemini Flash): 카피라이팅, 콘텐츠 기획
 - **[Creative-Design]** (`creative-design`, Gemini Flash): UI/비주얼 디자인
 

@@ -1,8 +1,8 @@
-# AGENTS.md — OpenClaw 만능 팀 (v11 — 3-Model Economy + Multi-Workspace)
+# AGENTS.md — OpenClaw 만능 팀 (v11 — 3-Model Economy + Multi-Workspace + Privacy-Safe)
 
 > ChatDev의 ChatChain 메커니즘 + Multi-Workspace 격리 + Agent Messaging + Lock 파일 관리
-> 3-Model Economy: Kimi K2.5 · Claude Haiku 4.5 · Gemini 2.5 Flash
-> 월 예산: **$50 USD**
+> 3-Model Economy: Kimi K2.5 (2개 ⚠️PII금지) · Claude Haiku 4.5 (12개) · Gemini 2.5 Flash (14개)
+> 월 예산: **$50 USD** | ⚠️ Kimi K2.5 = Moonshot AI (중국 서버), 개인정보 절대 전달 금지
 
 ---
 
@@ -180,30 +180,34 @@ rm shared/locks/{resource}.lock
 
 ## 👥 팀 구성 — 3-Model Economy
 
-### 모델 배치 전략 ($50/월)
-| 모델 | 가격 (입/출 MTok) | 배치된 역할 | 이유 |
-|------|------------------|------------|------|
-| **Kimi K2.5** | $0.60 / $3.00 | CEO, Research리드/분석, Data리드, Creative리드, Docs작성, Testing검증 | MMLU 92.0, GPQA 87.6, HumanEval 99.0 — 고추론 |
-| **Claude Haiku 4.5** | $1.00 / $5.00 | CTO, Dev전체, Data엔지니어, Security리드/감사, Testing리드/기능 | SWE-bench 73.3% — 코딩 최강 |
-| **Gemini 2.5 Flash** | $0.15 / $0.60 | COO, Research웹, Dev-자동화, Docs리드/포맷, Data-viz, Creative-content/design, Security-모니터, Optim전체 | 초저비용 대량처리 |
+### 모델 배치 전략 — Privacy-Safe 재배정 ($50/월)
 
-### 월간 비용 추정 (보수적)
+| 모델 | 단가 (입/출 MTok) | 핵심 강점 | 배치된 역할 | 에이전트 수 |
+|------|-----------------|---------|------------|-----------|
+| **Kimi K2.5** ⚠️ | $0.60 / $3.00 | MATH 98%, GPQA 87.6% — 수학·과학 형식 추론 | research-analyst, testing-validator **전용** (PII 금지) | **2개** |
+| **Claude Haiku 4.5** | $1.00 / $5.00 | SWE-bench 73.3%, 코딩·오케스트레이션, Anthropic 안전 | CEO, CTO, Research리드, Dev팀, Data리드/엔지니어, Security리드/감사, Testing리드/기능 | **12개** |
+| **Gemini 2.5 Flash** | $0.15 / $0.60 | 초저비용 대량처리, 멀티모달, Google 미국 서버 | COO, Research웹, Dev-자동화, Docs전체, Data-viz, Creative전체, Security모니터, Optim전체 | **14개** |
+
+> ⚠️ **Kimi K2.5 재배정 이유**: Moonshot AI (중국 서버) 처리로 개인정보 전송 위험.
+> CEO(Haiku)가 PII 필터 역할 수행. Kimi는 익명화된 순수 수학·과학 태스크만 수신.
+
+### 월간 비용 추정 (재배정 기준)
 | 구분 | 일일 호출 | 평균 토큰/호출 | 월 비용 추정 |
 |------|----------|---------------|-------------|
-| Kimi K2.5 (7 에이전트) | ~35회 | 2K in / 1K out | ~$3.15 |
-| Haiku 4.5 (9 에이전트) | ~65회 | 3K in / 2K out | ~$19.50 |
-| Gemini Flash (12 에이전트) | ~100회 | 5K in / 2K out | ~$4.50 |
+| Kimi K2.5 (2 에이전트) | ~10회 | 3K in / 2K out | ~$1.98 |
+| Haiku 4.5 (12 에이전트) | ~85회 | 3K in / 2K out | ~$25.50 |
+| Gemini Flash (14 에이전트) | ~110회 | 5K in / 2K out | ~$4.95 |
 | Batch API (Haiku 50%) | ~20회/주 | — | ~-$4.50 절약 |
-| **합계** | | | **~$22.65 / $50** |
+| **합계** | | | **~$27.93 / $50** |
 
-→ 일상 사용 시 **예산의 ~45%** 사용, **$27.35 여유** (피크 작업 대비)
+→ 일상 사용 시 **예산의 ~56%** 사용, **$22.07 여유** (Kimi 절감 -$1.17, Haiku 증가 +$6.00)
 
 ### C-Suite (경영진)
 
-#### [CEO] 최고경영자 — `kimi/kimi-k2.5`
+#### [CEO] 최고경영자 — `anthropic/claude-haiku-4.5`
 - **에이전트 ID**: `ceo`
-- **역할**: 전략 총괄, ChatChain 오케스트레이션, 동우님 보고
-- **모델 선정 이유**: GPQA 87.6%, MMLU 92.0% — 복잡한 의사결정·전략 수립에 최적
+- **역할**: 전략 총괄, ChatChain 오케스트레이션, **PII 필터**, 동우님 보고
+- **모델 선정 이유**: Anthropic (미국) — 개인정보 안전. SWE-bench 73.3%, 오케스트레이션·한국어 우수. Kimi 에이전트 디스패치 전 PII 제거 의무.
 - **개인폴더**: `agents/ceo/`
 
 #### [CTO] 최고기술책임자 — `anthropic/claude-haiku-4.5`
@@ -215,7 +219,7 @@ rm shared/locks/{resource}.lock
 #### [COO] 최고운영책임자 — `google/gemini-2.5-flash`
 - **에이전트 ID**: `coo`
 - **역할**: 운영 효율화, 리소스 관리, 프로세스 최적화
-- **모델 선정 이유**: 운영 관리는 고도 추론 불요, 비용 최적화 우선
+- **모델 선정 이유**: 운영 관리는 고도 추론 불요, 비용 최적화 우선. Google 미국 서버.
 - **개인폴더**: `agents/coo/`
 
 ### 실무 팀 (8개)
@@ -223,9 +227,9 @@ rm shared/locks/{resource}.lock
 #### 1. 🔬 리서치팀
 | 역할 | ID | 모델 | 이유 |
 |------|---|------|------|
-| 리드 | `research-lead` | Kimi K2.5 | 연구방향 설정에 높은 추론력 필요 |
+| 리드 | `research-lead` | **Haiku 4.5** | 사용자 컨텍스트 수신 가능 → 안전 모델 필요. 리서치 계획·종합 충분 |
 | 웹리서처 | `research-web` | Gemini Flash | 대량 검색·수집에 저비용 |
-| 심층분석 | `research-analyst` | Kimi K2.5 | 수학·논리·분석에 GPQA 87.6% 활용 |
+| 심층분석 | `research-analyst` | **Kimi K2.5** ⚠️ | 수학·논문 데이터 분석 (PII 없는 순수 학술 데이터만) |
 
 #### 2. 💻 개발팀
 | 역할 | ID | 모델 | 이유 |
@@ -238,21 +242,21 @@ rm shared/locks/{resource}.lock
 #### 3. 📄 문서팀
 | 역할 | ID | 모델 | 이유 |
 |------|---|------|------|
-| 리드 | `docs-lead` | Gemini Flash | 문서 관리에 저비용 |
-| 작성자 | `docs-writer` | Kimi K2.5 | 고품질 글쓰기에 높은 언어능력 |
-| 포맷터 | `docs-formatter` | Gemini Flash | 변환·포맷팅에 저비용 대량 |
+| 리드 | `docs-lead` | Gemini Flash | 문서 관리 저비용 |
+| 작성자 | `docs-writer` | **Gemini Flash** | 개인 문서 작성 시 PII 노출 가능 → 안전 모델. Google 미국 서버 |
+| 포맷터 | `docs-formatter` | Gemini Flash | 변환·포맷팅 저비용 대량 |
 
 #### 4. 📊 데이터팀
 | 역할 | ID | 모델 | 이유 |
 |------|---|------|------|
-| 리드 | `data-lead` | Kimi K2.5 | 분석·통계에 MATH 98.0% 활용 |
+| 리드 | `data-lead` | **Haiku 4.5** | 분석 지시 시 PII 노출 가능 → 안전 모델. 통계 분석 충분 |
 | 엔지니어 | `data-engineer` | Haiku 4.5 | 파이프라인 코딩 |
 | 시각화 | `data-viz` | Gemini Flash | 차트 생성에 저비용 |
 
 #### 5. 🎨 크리에이티브팀
 | 역할 | ID | 모델 | 이유 |
 |------|---|------|------|
-| 리드 | `creative-lead` | Kimi K2.5 | 브레인스토밍에 높은 추론력 |
+| 리드 | `creative-lead` | **Gemini Flash** | 개인적 창작물 작성 시 PII 노출 가능 → 안전 모델. 창의 방향 설정 충분 |
 | 콘텐츠 | `creative-content` | Gemini Flash | 카피라이팅 대량 |
 | 디자인 | `creative-design` | Gemini Flash | UI/비주얼 프로토타입 |
 
@@ -268,7 +272,7 @@ rm shared/locks/{resource}.lock
 |------|---|------|------|
 | 리드 | `testing-lead` | Haiku 4.5 | 테스트 전략에 코딩 능력 |
 | 기능 | `testing-functional` | Haiku 4.5 | 기능 테스트 실행 |
-| 검증자 | `testing-validator` | Kimi K2.5 | 수식·LaTeX 검증에 MATH 98% |
+| 검증자 | `testing-validator` | **Kimi K2.5** ⚠️ | 수식·LaTeX 형식 검증 전용. MATH 98% (PII 없는 수식만) |
 
 #### 8. ♻️ 최적화팀
 | 역할 | ID | 모델 | 이유 |

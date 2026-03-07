@@ -7,7 +7,7 @@ user-invocable: true
 
 ## 에이전트
 - **[Docs-Lead]** (`docs-lead`, Gemini Flash): 문서 전략, 템플릿, 품질 검수
-- **[Docs-Writer]** (`docs-writer`, Kimi K2.5): 보고서·매뉴얼·가이드 작성
+- **[Docs-Writer]** (`docs-writer`, Gemini Flash): 보고서·매뉴얼·가이드 작성 (개인 문서 포함 가능 → 안전 모델)
 - **[Docs-Formatter]** (`docs-formatter`, Gemini Flash): 포맷팅, LaTeX, 마크다운
 
 ## 템플릿
