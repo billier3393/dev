@@ -40,3 +40,32 @@ curl -s https://api.moonshot.cn/v1/chat/completions \
 - API 키는 반드시 `.env`에만 저장 (코드에 하드코딩 금지)
 - 30일마다 `scripts/rotate-keys.sh`로 키 교체
 - 속도 제한: `openclaw.json`의 `rateLimiting` 참조
+
+## openclaw onboard 적용 전 점검
+`openclaw onboard` 실행 전에 아래를 먼저 확인:
+
+```bash
+# 1) 설정 파일 문법 확인
+jq . ~/openclaw/openclaw.json
+
+# 2) 필수 키 확인 (.env)
+set -a && source ~/.env && set +a
+test -n "$ANTHROPIC_API_KEY" && test -n "$GOOGLE_AI_API_KEY" && test -n "$KIMI_API_KEY"
+
+# 3) 워크스페이스 초기화
+cd ~/openclaw/workspace
+bash scripts/team-init.sh
+```
+
+문제 없으면 onboard 적용:
+
+```bash
+openclaw onboard --config ~/openclaw/openclaw.json
+```
+
+적용 직후 검증:
+
+```bash
+openclaw doctor
+openclaw agents list
+```

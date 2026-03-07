@@ -3,7 +3,7 @@
     "version": "v11",
     "architecture": "ChatChain + Multi-Workspace + Batch API",
     "lastTouchedVersion": "2026.3.7",
-    "lastTouchedAt": "2026-03-07T12:00:00.000Z",
+    "lastTouchedAt": "2026-03-07T15:30:00.000Z",
     "description": "만능 팀 v11 — 3-Model Economy (Kimi K2.5 · Claude Haiku 4.5 · Gemini 2.5 Flash) · $50/월 예산 · Multi-Workspace · Agent Messaging · Lock Files · Ralph Wiggum Loop · Skill Factory · Model Benchmark Router · Batch API · 보안강화"
   },
   "env": {
@@ -124,7 +124,7 @@
           "kimi/kimi-k2.5"
         ]
       },
-      "workspace": "~/.openclaw/workspace",
+      "workspace": "~/openclaw/workspace",
       "memorySearch": {
         "cache": { "enabled": false }
       },

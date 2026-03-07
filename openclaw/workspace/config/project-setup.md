@@ -3,6 +3,9 @@
 ```bash
 cd ~/openclaw/workspace
 bash scripts/team-init.sh
+
+# OpenClaw 설정 적용
+openclaw onboard --config ~/openclaw/openclaw.json
 ```
 
 ## 사용법
