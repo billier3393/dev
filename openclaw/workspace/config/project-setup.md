@@ -1,7 +1,8 @@
 # 프로젝트 디렉토리 초기 설정
 
 ```bash
-cd ~/openclaw/workspace
+# 저장소 루트에서 실행
+cd /path/to/openclaw/workspace
 bash scripts/team-init.sh
 ```
 

@@ -13,6 +13,8 @@
       "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
       "GOOGLE_AI_API_KEY": "${GOOGLE_AI_API_KEY}",
       "KIMI_API_KEY": "${KIMI_API_KEY}",
+      "TELEGRAM_BOT_TOKEN": "${TELEGRAM_BOT_TOKEN}",
+      "GATEWAY_TOKEN": "${GATEWAY_TOKEN}",
       "MEMORY_ENCRYPTION_KEY": "${MEMORY_ENCRYPTION_KEY}"
     }
   },
@@ -122,7 +124,7 @@
           "kimi/kimi-k2.5"
         ]
       },
-      "workspace": "~/.openclaw/workspace",
+      "workspace": "./workspace",
       "memorySearch": {
         "cache": { "enabled": false }
       },
