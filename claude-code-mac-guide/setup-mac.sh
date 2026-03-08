@@ -369,47 +369,50 @@ step "4단계: 계정 전환 함수 등록"
 MARKER="# ── Claude Code 계정 전환 함수 (by setup-mac.sh) ──"
 
 if ! grep -q "$MARKER" "$SHELL_RC" 2>/dev/null; then
-  cat >> "$SHELL_RC" << 'ZSHRC_EOF'
+  # SHELL_RC 경로를 함수 본문에 직접 삽입 (heredoc 변수 확장 제한 우회)
+  SHELL_RC_HINT="$SHELL_RC"
+  cat >> "$SHELL_RC" << ZSHRC_EOF
 
 # ── Claude Code 계정 전환 함수 (by setup-mac.sh) ──
 # 구독형 계정으로 Claude Code 실행 (Claude.ai Pro/Max)
 function claude-sub() {
   unset ANTHROPIC_API_KEY
   echo "🔑 구독형 계정으로 실행 중..."
-  claude "$@"
+  claude "\$@"
 }
 
 # API 계정으로 Claude Code 실행
 function claude-api() {
-  if [[ -z "$ANTHROPIC_API_KEY_STORED" ]]; then
+  if [[ -z "\$ANTHROPIC_API_KEY_STORED" ]]; then
     echo "❌ API 키가 설정되지 않았습니다."
-    echo "   export ANTHROPIC_API_KEY_STORED=\"sk-ant-...\" 를 ${SHELL_RC}에 추가하세요."
+    echo "   다음을 ${SHELL_RC_HINT}에 추가하세요:"
+    echo "   export ANTHROPIC_API_KEY_STORED=\"sk-ant-...\""
     return 1
   fi
-  export ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY_STORED"
+  export ANTHROPIC_API_KEY="\$ANTHROPIC_API_KEY_STORED"
   echo "🔑 API 계정으로 실행 중..."
-  claude "$@"
+  claude "\$@"
 }
 
 # Opus 모델로 Claude Code 실행 (복잡한 설계/디버깅용)
 function claude-opus() {
   echo "🧠 Opus 모델로 실행 중... (비용 주의)"
-  claude --model claude-opus-4-6 "$@"
+  claude --model claude-opus-4-6 "\$@"
 }
 
 # 현재 Claude 계정 상태 확인
 function claude-status() {
   echo "── Claude Code 계정 상태 ──"
-  if [[ -n "$ANTHROPIC_API_KEY" ]]; then
-    echo "  현재 모드: API 계정 (키 앞 20자: ${ANTHROPIC_API_KEY:0:20}...)"
+  if [[ -n "\$ANTHROPIC_API_KEY" ]]; then
+    echo "  현재 모드: API 계정 (키 앞 20자: \${ANTHROPIC_API_KEY:0:20}...)"
   else
     echo "  현재 모드: 구독형 계정 (claude-sub 기본값)"
   fi
   echo ""
   echo "  명령어:"
-  echo "    claude-sub   → 구독형 계정 (Claude.ai Pro/Max)"
-  echo "    claude-api   → API 계정"
-  echo "    claude-opus  → Opus 모델 (복잡한 작업용)"
+  echo "    claude-sub    → 구독형 계정 (Claude.ai Pro/Max)"
+  echo "    claude-api    → API 계정"
+  echo "    claude-opus   → Opus 모델 (복잡한 작업용)"
   echo "    claude-status → 이 화면"
 }
 ZSHRC_EOF
