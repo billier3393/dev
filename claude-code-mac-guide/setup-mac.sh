@@ -33,9 +33,10 @@ cat << 'BANNER'
 BANNER
 echo -e "${NC}"
 
-# ── 프로젝트 루트 감지 ────────────────────────────────────────────────────────
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-info "프로젝트 루트: ${PROJECT_ROOT}"
+# ── 프로젝트 루트: 인수로 지정하거나, 없으면 현재 디렉터리 사용 ────────────────
+PROJECT_ROOT="${1:-$PWD}"
+PROJECT_ROOT="$(cd "$PROJECT_ROOT" && pwd)"
+info "프로젝트 루트: ${PROJECT_ROOT}  (변경하려면: bash setup-mac.sh /원하는/경로)"
 
 # ── shell 파일 감지 ───────────────────────────────────────────────────────────
 if [[ -f "$HOME/.zshrc" ]]; then
