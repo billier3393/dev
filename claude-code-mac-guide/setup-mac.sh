@@ -553,6 +553,258 @@ cp "$GLOBAL_CLAUDE/commands/spec.md" "$PROJECT_CLAUDE/commands/"
 success "프로젝트 .claude/ 설정 완료"
 
 # =============================================================================
+# 7단계: 팀별 모델/API 키 설정 (Excel 연동)
+# =============================================================================
+step "7단계: 팀별 모델/API 키 설정 (Excel 연동)"
+
+EXCEL_FILE="$PROJECT_ROOT/team-config.xlsx"
+EXCEL_HELPER="/tmp/_claude_excel_helper_$$.py"
+
+# ── Python 헬퍼 스크립트 임시 생성 ────────────────────────────────────────────
+cat > "$EXCEL_HELPER" << 'PYEOF'
+#!/usr/bin/env python3
+"""Claude Code team-config.xlsx 생성 및 파싱 헬퍼"""
+import sys, re, json
+
+MODEL_MAP = {
+    "haiku 4.6":        ("claude-haiku-4-6",   "anthropic"),
+    "sonnet 4.6":       ("claude-sonnet-4-6",  "anthropic"),
+    "opus 4.6":         ("claude-opus-4-6",    "anthropic"),
+    "gemini 2.5 flash": ("gemini-2.5-flash",   "google"),
+    "gemini 3 flash":   ("gemini-3-flash",     "google"),
+    "gemini 3 pro":     ("gemini-3-pro",       "google"),
+    "gpt-4o":           ("gpt-4o",             "openai"),
+    "gpt 4o":           ("gpt-4o",             "openai"),
+    "gpt-5.4":          ("gpt-5.4",            "openai"),
+    "gpt 5.4":          ("gpt-5.4",            "openai"),
+}
+MODEL_LABELS = [
+    "Haiku 4.6", "Sonnet 4.6", "Opus 4.6",
+    "Gemini 2.5 Flash", "Gemini 3 Flash", "Gemini 3 Pro",
+    "GPT-4o", "GPT-5.4",
+]
+PLACEHOLDERS = {"sk-ant-여기에입력", "sk-여기에입력", "AIzaSy-여기에입력"}
+
+def safe_func_name(name):
+    """팀명을 shell 함수명으로 변환"""
+    return re.sub(r'[^\w가-힣\-]', '-', str(name).strip()).strip('-') or "team"
+
+def create_template(path):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from openpyxl.worksheet.datavalidation import DataValidation
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "팀별 설정"
+
+    # 열 너비
+    for col, w in zip("ABCDEF", [20, 20, 52, 52, 52, 25]):
+        ws.column_dimensions[col].width = w
+
+    # 헤더
+    hdr_fill = PatternFill("solid", fgColor="1F3864")
+    hdr_font = Font(bold=True, color="FFFFFF", size=11)
+    center   = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    headers  = [
+        "팀명", "모델",
+        "Anthropic API Key (Claude용)",
+        "OpenAI API Key (GPT용)",
+        "Google API Key (Gemini용)",
+        "메모",
+    ]
+    ws.row_dimensions[1].height = 36
+    for c, h in enumerate(headers, 1):
+        cell = ws.cell(1, c, h)
+        cell.fill = hdr_fill; cell.font = hdr_font; cell.alignment = center
+
+    # 모델 드롭다운
+    dv = DataValidation(
+        type="list",
+        formula1='"' + ','.join(MODEL_LABELS) + '"',
+        allow_blank=True, showDropDown=False,
+    )
+    ws.add_data_validation(dv)
+    dv.sqref = "B2:B200"
+
+    # 샘플 데이터
+    alt = PatternFill("solid", fgColor="EBF3FF")
+    samples = [
+        ("개발팀",      "Sonnet 4.6",       "sk-ant-여기에입력", "",                  "",                   "일반 개발 작업"),
+        ("AI리서치팀",  "Opus 4.6",         "sk-ant-여기에입력", "",                  "",                   "복잡한 분석·설계"),
+        ("프론트팀",    "GPT-4o",           "",                  "sk-여기에입력",      "",                   "GPT 선호 팀"),
+        ("데이터팀",    "Gemini 2.5 Flash",  "",                  "",                  "AIzaSy-여기에입력",  "빠른 데이터 분석"),
+    ]
+    for i, row in enumerate(samples, 2):
+        ws.row_dimensions[i].height = 20
+        for c, v in enumerate(row, 1):
+            cell = ws.cell(i, c, v)
+            if i % 2 == 0:
+                cell.fill = alt
+            cell.alignment = Alignment(vertical="center")
+
+    # 안내 시트
+    ws2 = wb.create_sheet("📖 사용 안내")
+    ws2.column_dimensions['A'].width = 72
+    guide = [
+        "=== Claude Code 팀별 설정 파일 사용 안내 ===",
+        "",
+        "1. '팀별 설정' 시트에 각 팀 정보를 입력하세요.",
+        "2. 팀명: 영문·한글 모두 가능  (예: dev팀, AI팀, backend)",
+        "3. 모델: 드롭다운에서 선택하세요.",
+        "4. API Key: 해당 모델 제공사 키만 입력하면 됩니다.",
+        "   ├ Claude(Haiku·Sonnet·Opus) → Anthropic API Key",
+        "   ├ GPT-4o·GPT-5.4           → OpenAI API Key",
+        "   └ Gemini 2.5/3 Flash·Pro   → Google API Key",
+        "",
+        "5. 저장 후 setup-mac.sh 를 다시 실행하면 팀별 함수가 등록됩니다.",
+        "",
+        "등록 후 사용 예:",
+        "  claude-개발팀          → 개발팀 설정으로 Claude Code 실행",
+        "  claude-AI리서치팀      → AI리서치팀 설정으로 실행",
+        "  claude-team-list       → 등록된 팀 목록 확인",
+        "",
+        "── 모델 ID 매핑 ──",
+    ] + [f"  {label:<22} → {MODEL_MAP[label.lower()][0]}  ({MODEL_MAP[label.lower()][1]})"
+         for label in MODEL_LABELS]
+
+    for i, line in enumerate(guide, 1):
+        cell = ws2.cell(i, 1, line)
+        if line.startswith("==="):
+            cell.font = Font(bold=True, size=13)
+        elif line.startswith("──"):
+            cell.font = Font(bold=True)
+
+    wb.save(path)
+    print(f"CREATED:{path}")
+
+def read_config(path):
+    from openpyxl import load_workbook
+    wb = load_workbook(path)
+    ws = wb.active
+
+    lines = ["\n# ── Claude Code 팀별 모델 설정 (by setup-mac.sh) ──"]
+    team_names = []
+
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        team_raw = row[0]
+        if not team_raw:
+            continue
+        model_label   = str(row[1] or "").strip()
+        anthropic_key = str(row[2] or "").strip()
+        openai_key    = str(row[3] or "").strip()
+        google_key    = str(row[4] or "").strip()
+
+        key = model_label.lower()
+        if key not in MODEL_MAP:
+            continue
+        model_id, provider = MODEL_MAP[key]
+
+        # API 키 선택 (플레이스홀더 제외)
+        if   provider == "anthropic" and anthropic_key and anthropic_key not in PLACEHOLDERS:
+            api_key, key_var = anthropic_key, "ANTHROPIC_API_KEY"
+        elif provider == "openai"    and openai_key    and openai_key    not in PLACEHOLDERS:
+            api_key, key_var = openai_key,    "OPENAI_API_KEY"
+        elif provider == "google"    and google_key    and google_key    not in PLACEHOLDERS:
+            api_key, key_var = google_key,    "GOOGLE_API_KEY"
+        else:
+            api_key, key_var = "", ("ANTHROPIC_API_KEY" if provider=="anthropic"
+                                    else "OPENAI_API_KEY" if provider=="openai"
+                                    else "GOOGLE_API_KEY")
+
+        func = safe_func_name(team_raw)
+        team_names.append(func)
+
+        lines.append(f"function claude-{func}() {{")
+        if api_key:
+            lines.append(f'  export {key_var}="{api_key}"')
+        lines.append(f'  echo "🤖 [{func}] {model_id} 모델로 실행 중..."')
+        lines.append(f'  claude --model {model_id} "$@"')
+        lines.append("}")
+        lines.append("")
+
+    # 팀 목록 확인 함수
+    if team_names:
+        lines.append("function claude-team-list() {")
+        lines.append('  echo "── 등록된 Claude 팀 함수 ──"')
+        for t in team_names:
+            lines.append(f'  echo "  claude-{t}"')
+        lines.append("}")
+        lines.append("")
+
+    print('\n'.join(lines))
+
+if __name__ == "__main__":
+    mode, path = sys.argv[1], sys.argv[2]
+    if mode == "create":
+        create_template(path)
+    elif mode == "read":
+        read_config(path)
+PYEOF
+
+# ── openpyxl 확인 및 설치 ──────────────────────────────────────────────────────
+if ! python3 -c "import openpyxl" 2>/dev/null; then
+  info "openpyxl 설치 중... (Excel 파싱에 필요)"
+  pip3 install openpyxl --quiet 2>/dev/null || \
+  python3 -m pip install openpyxl --quiet 2>/dev/null || \
+  warn "openpyxl 설치 실패. 수동으로 실행하세요: pip3 install openpyxl"
+fi
+
+if python3 -c "import openpyxl" 2>/dev/null; then
+  # ── 엑셀 파일이 없으면 템플릿 생성 ──────────────────────────────────────────
+  if [[ ! -f "$EXCEL_FILE" ]]; then
+    RESULT=$(python3 "$EXCEL_HELPER" create "$EXCEL_FILE" 2>&1)
+    if [[ "$RESULT" == CREATED:* ]]; then
+      success "팀 설정 템플릿 생성됨: ${EXCEL_FILE}"
+      info "  1) team-config.xlsx 를 열어 각 팀의 모델·API 키를 입력하세요."
+      info "  2) 저장 후 setup-mac.sh 를 다시 실행하면 팀별 함수가 등록됩니다."
+    else
+      warn "템플릿 생성 실패: $RESULT"
+    fi
+  else
+    # ── 엑셀 읽어서 팀별 함수를 SHELL_RC 에 등록 ─────────────────────────────
+    TEAM_SHELL=$(python3 "$EXCEL_HELPER" read "$EXCEL_FILE" 2>&1)
+
+    if [[ -z "$TEAM_SHELL" ]]; then
+      warn "team-config.xlsx 에서 읽을 팀 데이터가 없습니다."
+    else
+      TEAM_MARKER="# ── Claude Code 팀별 모델 설정 (by setup-mac.sh) ──"
+
+      if grep -q "$TEAM_MARKER" "$SHELL_RC" 2>/dev/null; then
+        # 기존 팀 블록 삭제 후 재등록 (sed 로 마커부터 다음 빈줄까지 제거)
+        python3 - "$SHELL_RC" "$TEAM_MARKER" << 'REMOVE_PY'
+import sys
+path, marker = sys.argv[1], sys.argv[2]
+with open(path) as f:
+    content = f.read()
+start = content.find('\n' + marker)
+if start == -1:
+    start = content.find(marker)
+    if start > 0:
+        start -= 1
+if start != -1:
+    end = content.find('\n\n\n', start + 1)
+    end = end if end != -1 else len(content)
+    content = content[:start] + content[end:]
+with open(path, 'w') as f:
+    f.write(content)
+REMOVE_PY
+        info "기존 팀 설정을 새 설정으로 교체합니다."
+      fi
+
+      printf '%s\n' "$TEAM_SHELL" >> "$SHELL_RC"
+      TEAM_COUNT=$(echo "$TEAM_SHELL" | grep -c "^function claude-" || true)
+      success "팀별 함수 ${TEAM_COUNT}개 등록 완료 (claude-team-list 로 확인)"
+    fi
+  fi
+else
+  warn "openpyxl 없이 Excel 연동을 건너뜁니다."
+  warn "나중에 실행: pip3 install openpyxl && bash setup-mac.sh"
+fi
+
+rm -f "$EXCEL_HELPER"
+
+# =============================================================================
 # 완료 요약
 # =============================================================================
 echo ""
@@ -573,13 +825,29 @@ echo "  ~/.claude/hooks/notify-complete.sh — 작업 완료 macOS 알림"
 echo "  ~/.claude/hooks/task-gate.sh      — 테스트 실패 시 task 반려"
 echo "  ${PROJECT_ROOT}/CLAUDE.md         — 프로젝트 지침"
 echo "  ${PROJECT_ROOT}/.claude/          — 프로젝트 Claude 설정"
+if [[ -f "$EXCEL_FILE" ]]; then
+echo "  ${EXCEL_FILE}  — 팀별 모델·API 키 설정"
+else
+echo "  ${EXCEL_FILE}  — 팀별 설정 템플릿 (내용 입력 후 재실행)"
+fi
 echo ""
 
-echo -e "${BOLD}🔑 계정 전환 명령어:${NC}"
-echo "  claude-sub    → 구독형 계정 (Claude.ai Pro/Max)"
-echo "  claude-api    → API 계정 (ANTHROPIC_API_KEY)"
-echo "  claude-opus   → Opus 모델 (복잡한 작업용)"
-echo "  claude-status → 현재 계정 상태 확인"
+echo -e "${BOLD}🔑 계정·팀 전환 명령어:${NC}"
+echo "  claude-sub       → 구독형 계정 (Claude.ai Pro/Max)"
+echo "  claude-api       → API 계정 (ANTHROPIC_API_KEY)"
+echo "  claude-opus      → Opus 모델 (복잡한 작업용)"
+echo "  claude-status    → 현재 계정 상태 확인"
+echo "  claude-team-list → 등록된 팀 함수 목록 확인"
+echo "  claude-<팀명>    → 팀별 모델/키로 Claude Code 실행"
+echo ""
+
+echo -e "${BOLD}📊 팀별 모델 설정 (Excel):${NC}"
+echo "  1) ${EXCEL_FILE} 열기"
+echo "  2) 각 팀의 모델(드롭다운)과 API 키 입력"
+echo "  3) 저장 후 setup-mac.sh 재실행 → 팀별 함수 자동 등록"
+echo "  지원 모델: Haiku 4.6 / Sonnet 4.6 / Opus 4.6"
+echo "            Gemini 2.5 Flash / Gemini 3 Flash / Gemini 3 Pro"
+echo "            GPT-4o / GPT-5.4"
 echo ""
 
 echo -e "${BOLD}💡 주요 커맨드 (Claude Code 내에서):${NC}"
