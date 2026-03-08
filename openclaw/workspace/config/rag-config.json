@@ -1,0 +1,111 @@
+{
+  "_comment": "OpenClaw v11 — DevRAG 설정 (MacBook Air M1 최적화)",
+  "devrag": {
+    "version": "v11",
+    "platform": "darwin-arm64",
+    "device": "mps",
+    "mpsFallback": true,
+    "env": {
+      "PYTORCH_ENABLE_MPS_FALLBACK": "1"
+    }
+  },
+  "embedding": {
+    "model": "all-MiniLM-L6-v2",
+    "dimension": 384,
+    "batchSize": 32,
+    "normalize": true,
+    "cacheDir": "rag/embedding_cache"
+  },
+  "vectorStore": {
+    "backend": "chromadb",
+    "persistDir": "rag/index",
+    "collection": "openclaw_v11",
+    "distanceMetric": "cosine"
+  },
+  "chunking": {
+    "strategy": "recursive",
+    "chunkSize": 512,
+    "chunkOverlap": 64,
+    "separators": ["\n\n", "\n", "。", ". ", " "]
+  },
+  "retrieval": {
+    "topK": 5,
+    "scoreThreshold": 0.65,
+    "mmr": {
+      "enabled": true,
+      "lambda": 0.7,
+      "fetchK": 20
+    }
+  },
+  "protected": {
+    "_comment": "이 파일들은 절대 RAG 인덱싱 대상이 아님. 항상 직접 컨텍스트에 로드.",
+    "files": [
+      "SOUL.md",
+      "USER.md",
+      "GOVERNANCE.md",
+      "IDENTITY.md",
+      "MEMORY.md",
+      "AGENTS.md",
+      "HEARTBEAT.md",
+      "CHAIN_REGISTRY.md",
+      "TOOLS.md",
+      "openclaw.json",
+      "config/copilot-setup.md",
+      "config/project-setup.md",
+      "teams/ROSTER.md",
+      "memory/user_commands.jsonl",
+      "memory/budget_tracker.json",
+      "memory/key_rotation_log.json",
+      "scripts/*.sh"
+    ],
+    "priority": "always-in-context",
+    "compressionAllowed": false
+  },
+  "indexable": {
+    "include": [
+      "chains/*/SKILL.md",
+      "shared/artifacts/**/*.md",
+      "shared/handoffs/**/*.md",
+      "chains/logs/**/*.md",
+      "research/**/*.md",
+      "code/**/*.md",
+      "reports/**/*.md",
+      "analysis/**/*.md",
+      "creative/**/*.md",
+      "security/**/*.md",
+      "optimization/**/*.md",
+      "teams/governance_log.md"
+    ],
+    "exclude": [
+      "rag/**",
+      "memory/**",
+      "scripts/**",
+      "config/**",
+      ".git/**"
+    ]
+  },
+  "autoReindex": {
+    "enabled": true,
+    "watchPaths": [
+      "shared/artifacts",
+      "shared/handoffs",
+      "research",
+      "reports",
+      "analysis"
+    ],
+    "debounceSeconds": 30,
+    "schedule": "0 */6 * * *"
+  },
+  "contextManagement": {
+    "globalLimitTokens": 200000,
+    "protectedReserveTokens": 8000,
+    "ragBudgetTokens": 12000,
+    "chunkingPolicy": {
+      "enabled": true,
+      "chunkSizeTokens": 180000,
+      "overlapTokens": 2000,
+      "summaryModel": "google/gemini-2.5-flash",
+      "mergeStrategy": "sequential-summary"
+    }
+  }
+}

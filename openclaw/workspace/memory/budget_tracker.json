@@ -1,0 +1,16 @@
+{
+  "version": "v11",
+  "month": "2026-03",
+  "budgetUSD": 50.00,
+  "usedUSD": 0.00,
+  "remainingUSD": 50.00,
+  "dailyUsed": [],
+  "byModel": {
+    "kimi-k2.5": { "calls": 0, "inputTokens": 0, "outputTokens": 0, "costUSD": 0.00 },
+    "claude-haiku-4.5": { "calls": 0, "inputTokens": 0, "outputTokens": 0, "costUSD": 0.00 },
+    "gemini-2.5-flash": { "calls": 0, "inputTokens": 0, "outputTokens": 0, "costUSD": 0.00 }
+  },
+  "byTeam": {},
+  "batchSavingsUSD": 0.00,
+  "lastUpdated": "2026-03-07T12:00:00Z"
+}

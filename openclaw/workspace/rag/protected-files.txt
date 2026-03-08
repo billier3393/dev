@@ -1,0 +1,39 @@
+# =============================================================
+# OpenClaw v11 — RAG 보호 파일 목록
+# 이 파일들은 절대 RAG 인덱싱 금지. 항상 직접 컨텍스트에 로드.
+# =============================================================
+#
+# [보호 이유]
+# - 시스템 핵심 정체성: 언제나 100% 정확하게 로드되어야 함
+# - 사용자 규칙: 동우님이 정한 규칙은 RAG로 희석/누락되면 안 됨
+# - 보안 정책: 인젝션 방어, 암호화 규칙 등 항시 활성화 필요
+# - 예산 정보: 실시간 예산 현황은 항상 최신값 직접 참조 필요
+# =============================================================
+
+# --- 시스템 정체성 & 핵심 규칙 ---
+SOUL.md
+USER.md
+GOVERNANCE.md
+IDENTITY.md
+MEMORY.md
+AGENTS.md
+HEARTBEAT.md
+CHAIN_REGISTRY.md
+TOOLS.md
+
+# --- 설정 파일 ---
+../openclaw.json
+config/rag-config.json
+config/copilot-setup.md
+config/project-setup.md
+
+# --- 팀 구성 ---
+teams/ROSTER.md
+
+# --- 메모리 (암호화된 실시간 데이터) ---
+memory/user_commands.jsonl
+memory/budget_tracker.json
+memory/key_rotation_log.json
+
+# --- 스크립트 (실행 파일, 인덱싱 불필요) ---
+scripts/*.sh

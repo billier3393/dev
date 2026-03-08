@@ -1,0 +1,574 @@
+{
+  "meta": {
+    "version": "v11",
+    "architecture": "ChatChain + Multi-Workspace + Batch API",
+    "lastTouchedVersion": "2026.3.7",
+    "lastTouchedAt": "2026-03-07T12:00:00.000Z",
+    "description": "만능 팀 v11 — 3-Model Economy (Kimi K2.5 · Claude Haiku 4.5 · Gemini 2.5 Flash) · $50/월 예산 · Multi-Workspace · Agent Messaging · Lock Files · Ralph Wiggum Loop · Skill Factory · Model Benchmark Router · Batch API · 보안강화"
+  },
+  "env": {
+    "vars": {
+      "NOTION_API_TOKEN": "${NOTION_API_TOKEN}",
+      "NOTION_PAGE_ID": "${NOTION_PAGE_ID}",
+      "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+      "GOOGLE_AI_API_KEY": "${GOOGLE_AI_API_KEY}",
+      "KIMI_API_KEY": "${KIMI_API_KEY}",
+      "MEMORY_ENCRYPTION_KEY": "${MEMORY_ENCRYPTION_KEY}"
+    }
+  },
+  "auth": {
+    "profiles": {
+      "anthropic:default": {
+        "provider": "anthropic",
+        "mode": "api_key"
+      },
+      "google:default": {
+        "provider": "google",
+        "mode": "api_key"
+      },
+      "kimi:default": {
+        "provider": "kimi",
+        "mode": "api_key"
+      }
+    },
+    "keyRotation": {
+      "enabled": true,
+      "intervalDays": 30,
+      "reminderDaysBefore": 3,
+      "logFile": "memory/key_rotation_log.json"
+    }
+  },
+  "models": {
+    "providers": {
+      "anthropic": {
+        "baseUrl": "https://api.anthropic.com/v1",
+        "models": {
+          "claude-haiku-4.5": {
+            "id": "claude-haiku-4-5-20251001",
+            "inputPrice": 1.00,
+            "outputPrice": 5.00,
+            "batchInputPrice": 0.50,
+            "batchOutputPrice": 2.50,
+            "contextWindow": 200000,
+            "maxOutput": 8192
+          }
+        }
+      },
+      "google": {
+        "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+        "models": {
+          "gemini-2.5-flash": {
+            "id": "gemini-2.5-flash-preview-05-20",
+            "inputPrice": 0.15,
+            "outputPrice": 0.60,
+            "thinkingInputPrice": 0.15,
+            "thinkingOutputPrice": 1.25,
+            "contextWindow": 200000,
+            "maxOutput": 65536
+          }
+        }
+      },
+      "kimi": {
+        "baseUrl": "https://api.moonshot.cn/v1",
+        "models": {
+          "kimi-k2.5": {
+            "id": "kimi-k2.5",
+            "inputPrice": 0.60,
+            "outputPrice": 3.00,
+            "contextWindow": 131072,
+            "maxOutput": 8192
+          }
+        }
+      }
+    }
+  },
+  "budget": {
+    "monthly": {
+      "limitUSD": 50.00,
+      "warningThresholdPercent": 70,
+      "criticalThresholdPercent": 90,
+      "trackingFile": "memory/budget_tracker.json",
+      "resetDay": 1
+    },
+    "daily": {
+      "softLimitUSD": 2.00,
+      "hardLimitUSD": 5.00
+    },
+    "perAgent": {
+      "enabled": true,
+      "trackByTeam": true
+    }
+  },
+  "rateLimiting": {
+    "enabled": true,
+    "external": {
+      "requestsPerMinute": 30,
+      "requestsPerHour": 500,
+      "burstLimit": 10,
+      "cooldownSeconds": 60
+    },
+    "perModel": {
+      "claude-haiku-4.5": { "rpm": 20, "tpm": 100000 },
+      "gemini-2.5-flash": { "rpm": 30, "tpm": 200000 },
+      "kimi-k2.5": { "rpm": 15, "tpm": 80000 }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "google/gemini-2.5-flash",
+        "fallbacks": [
+          "anthropic/claude-haiku-4.5",
+          "kimi/kimi-k2.5"
+        ]
+      },
+      "workspace": "~/.openclaw/workspace",
+      "memorySearch": {
+        "cache": { "enabled": false }
+      },
+      "compaction": {
+        "memoryFlush": {
+          "enabled": true,
+          "softThresholdTokens": 3000
+        }
+      },
+      "contextPruning": {
+        "mode": "aggressive"
+      }
+    },
+    "list": [
+      {
+        "id": "ceo",
+        "default": true,
+        "name": "CEO",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/ceo",
+        "tools": {
+          "allow": ["exec","read","write","edit","glob","grep","browser","sessions_spawn","sessions_send","sessions_list","sessions_history"]
+        },
+        "subagents": {
+          "allowAgents": ["cto","coo","research-lead","dev-lead","docs-lead","data-lead","creative-lead","security-lead","testing-lead","optim-lead"]
+        }
+      },
+      {
+        "id": "cto",
+        "name": "CTO",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/cto",
+        "tools": {
+          "allow": ["exec","read","write","edit","glob","grep","browser","sessions_spawn","sessions_send","sessions_list"]
+        },
+        "subagents": {
+          "allowAgents": ["dev-lead","testing-lead","security-lead","research-lead"]
+        }
+      },
+      {
+        "id": "coo",
+        "name": "COO",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/coo",
+        "tools": {
+          "allow": ["exec","read","write","edit","glob","grep","sessions_spawn","sessions_send","sessions_list"]
+        },
+        "subagents": {
+          "allowAgents": ["docs-lead","data-lead","creative-lead","optim-lead"]
+        }
+      },
+      {
+        "id": "research-lead",
+        "name": "리서치 리드",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/research-lead",
+        "tools": {
+          "allow": ["exec","read","write","edit","glob","grep","browser","sessions_spawn","sessions_send"]
+        },
+        "subagents": { "allowAgents": ["research-web","research-analyst"] }
+      },
+      {
+        "id": "research-web",
+        "name": "웹 리서처",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/research-web",
+        "tools": { "allow": ["exec","read","write","browser","glob"], "deny": ["sessions_spawn"] }
+      },
+      {
+        "id": "research-analyst",
+        "name": "심층 분석가",
+        "model": "kimi/kimi-k2.5",
+        "personalDir": "agents/research-analyst",
+        "tools": { "allow": ["exec","read","write","edit","glob"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "dev-lead",
+        "name": "개발 리드",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/dev-lead",
+        "tools": {
+          "allow": ["exec","read","write","edit","glob","grep","sessions_spawn","sessions_send"]
+        },
+        "subagents": { "allowAgents": ["dev-backend","dev-frontend","dev-automation"] }
+      },
+      {
+        "id": "dev-backend",
+        "name": "백엔드 개발자",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/dev-backend",
+        "tools": { "allow": ["exec","read","write","edit","glob","grep"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "dev-frontend",
+        "name": "프론트엔드 개발자",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/dev-frontend",
+        "tools": { "allow": ["exec","read","write","edit","glob","grep"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "dev-automation",
+        "name": "자동화/OCR 담당",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/dev-automation",
+        "tools": { "allow": ["exec","read","write","edit","glob"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "docs-lead",
+        "name": "문서 리드",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/docs-lead",
+        "tools": {
+          "allow": ["exec","read","write","edit","glob","grep","sessions_spawn","sessions_send"]
+        },
+        "subagents": { "allowAgents": ["docs-writer","docs-formatter"] }
+      },
+      {
+        "id": "docs-writer",
+        "name": "문서 작성자",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/docs-writer",
+        "tools": { "allow": ["exec","read","write","edit","glob","browser"], "deny": ["sessions_spawn"] }
+      },
+      {
+        "id": "docs-formatter",
+        "name": "포맷팅 담당",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/docs-formatter",
+        "tools": { "allow": ["exec","read","write","edit","glob"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "data-lead",
+        "name": "데이터 리드",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/data-lead",
+        "tools": {
+          "allow": ["exec","read","write","edit","glob","grep","sessions_spawn","sessions_send"]
+        },
+        "subagents": { "allowAgents": ["data-engineer","data-viz"] }
+      },
+      {
+        "id": "data-engineer",
+        "name": "데이터 엔지니어",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/data-engineer",
+        "tools": { "allow": ["exec","read","write","edit","glob","grep"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "data-viz",
+        "name": "시각화 담당",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/data-viz",
+        "tools": { "allow": ["exec","read","write","edit","glob"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "creative-lead",
+        "name": "크리에이티브 리드",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/creative-lead",
+        "tools": {
+          "allow": ["exec","read","write","edit","glob","grep","browser","sessions_spawn","sessions_send"]
+        },
+        "subagents": { "allowAgents": ["creative-content","creative-design"] }
+      },
+      {
+        "id": "creative-content",
+        "name": "콘텐츠 기획자",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/creative-content",
+        "tools": { "allow": ["exec","read","write","edit","glob","browser"], "deny": ["sessions_spawn"] }
+      },
+      {
+        "id": "creative-design",
+        "name": "디자이너",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/creative-design",
+        "tools": { "allow": ["exec","read","write","edit","glob"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "security-lead",
+        "name": "보안 리드",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/security-lead",
+        "tools": {
+          "allow": ["exec","read","write","edit","glob","grep","sessions_spawn","sessions_send"]
+        },
+        "subagents": { "allowAgents": ["security-auditor","security-monitor"] }
+      },
+      {
+        "id": "security-auditor",
+        "name": "보안 감사자",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/security-auditor",
+        "tools": { "allow": ["exec","read","write","edit","glob","grep"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "security-monitor",
+        "name": "보안 모니터",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/security-monitor",
+        "tools": { "allow": ["exec","read","glob","grep"], "deny": ["write","edit","browser","sessions_spawn"] }
+      },
+      {
+        "id": "testing-lead",
+        "name": "테스팅 리드",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/testing-lead",
+        "tools": {
+          "allow": ["exec","read","write","edit","glob","grep","sessions_spawn","sessions_send"]
+        },
+        "subagents": { "allowAgents": ["testing-functional","testing-validator"] }
+      },
+      {
+        "id": "testing-functional",
+        "name": "기능 테스터",
+        "model": "anthropic/claude-haiku-4.5",
+        "personalDir": "agents/testing-functional",
+        "tools": { "allow": ["exec","read","write","edit","glob","grep"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "testing-validator",
+        "name": "수식/데이터 검증자",
+        "model": "kimi/kimi-k2.5",
+        "personalDir": "agents/testing-validator",
+        "tools": { "allow": ["exec","read","write","edit","glob"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "optim-lead",
+        "name": "최적화 리드",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/optim-lead",
+        "tools": {
+          "allow": ["exec","read","write","edit","glob","grep","sessions_spawn","sessions_send"]
+        },
+        "subagents": { "allowAgents": ["optim-perf","optim-process"] }
+      },
+      {
+        "id": "optim-perf",
+        "name": "성능 최적화 담당",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/optim-perf",
+        "tools": { "allow": ["exec","read","write","glob"], "deny": ["browser","sessions_spawn"] }
+      },
+      {
+        "id": "optim-process",
+        "name": "프로세스 개선 담당",
+        "model": "google/gemini-2.5-flash",
+        "personalDir": "agents/optim-process",
+        "tools": { "allow": ["exec","read","write","edit","glob","browser"], "deny": ["sessions_spawn"] }
+      }
+    ]
+  },
+  "messaging": {
+    "enabled": true,
+    "directory": "shared/messages",
+    "format": "jsonl",
+    "maxMessageSize": 4096,
+    "retentionDays": 7,
+    "channels": {
+      "broadcast": { "type": "pubsub", "subscribers": "all" },
+      "c-suite": { "type": "group", "members": ["ceo","cto","coo"] },
+      "tech": { "type": "group", "members": ["cto","dev-lead","testing-lead","security-lead"] },
+      "ops": { "type": "group", "members": ["coo","docs-lead","data-lead","creative-lead","optim-lead"] }
+    }
+  },
+  "locking": {
+    "enabled": true,
+    "directory": "shared/locks",
+    "timeoutSeconds": 300,
+    "staleLockCleanupMinutes": 10,
+    "maxRetries": 3
+  },
+  "batchApi": {
+    "enabled": true,
+    "provider": "anthropic",
+    "collectorIntervalMinutes": 15,
+    "maxBatchSize": 100,
+    "maxWaitMinutes": 30,
+    "queueDirectory": "shared/batch_queue",
+    "resultsDirectory": "shared/batch_results",
+    "eligibleTasks": ["bulk-analysis","report-generation","code-review","data-processing","ocr-batch"]
+  },
+  "workspace": {
+    "shared": {
+      "directory": "shared",
+      "subdirs": ["messages","locks","batch_queue","batch_results","handoffs","artifacts"]
+    },
+    "personalDirs": {
+      "enabled": true,
+      "baseDir": "agents",
+      "structure": ["inbox","outbox","workspace","scratch"]
+    }
+  },
+  "bindings": [
+    { "agentId": "ceo", "match": { "channel": "telegram" } }
+  ],
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "userCommandPreservation": {
+      "enabled": true,
+      "policy": "never-compress-user-commands",
+      "logOriginal": true,
+      "storePath": "memory/user_commands.jsonl"
+    }
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "boot-md": { "enabled": true },
+        "bootstrap-extra-files": { "enabled": true },
+        "command-logger": { "enabled": true },
+        "session-memory": { "enabled": true }
+      }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
+      "groupPolicy": "allowlist",
+      "streamMode": "partial"
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "${GATEWAY_TOKEN}"
+    },
+    "tailscale": { "mode": "off", "resetOnExit": false },
+    "nodes": {
+      "denyCommands": [
+        "camera.snap","camera.clip","screen.record",
+        "calendar.add","contacts.add","reminders.add"
+      ]
+    }
+  },
+  "security": {
+    "emailValidation": {
+      "enabled": true,
+      "requireUserApproval": true,
+      "maxRecipientsPerEmail": 5,
+      "blockedDomains": [],
+      "confirmationPrompt": "이메일 전송을 승인하시겠습니까? (승인/반려)"
+    },
+    "memoryEncryption": {
+      "enabled": true,
+      "algorithm": "AES-256-GCM",
+      "keyEnvVar": "MEMORY_ENCRYPTION_KEY",
+      "encryptedPaths": ["memory/*.json","memory/*.jsonl","agents/*/inbox/*","agents/*/outbox/*"]
+    },
+    "injectionDefense": {
+      "enabled": true,
+      "patterns": ["시스템:","SYSTEM:","ignore previous","새로운 지시","forget .* instructions","you are now","pretend to be","act as if"],
+      "action": "warn-and-ignore",
+      "logFile": "security/injection_log.jsonl"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "telegram": { "enabled": true }
+    }
+  },
+  "skills": {
+    "load": { "watch": true }
+  },
+  "contextManagement": {
+    "globalLimitTokens": 200000,
+    "chunkingPolicy": {
+      "enabled": true,
+      "chunkSizeTokens": 180000,
+      "overlapTokens": 2000,
+      "summaryModel": "google/gemini-2.5-flash",
+      "summaryPrompt": "다음 청크의 핵심 내용을 3~5문장으로 요약하라. 수식·코드·수치는 반드시 보존할 것.",
+      "mergeStrategy": "sequential-summary"
+    },
+    "protectedContext": {
+      "alwaysLoad": [
+        "SOUL.md",
+        "USER.md",
+        "GOVERNANCE.md",
+        "IDENTITY.md",
+        "MEMORY.md",
+        "AGENTS.md",
+        "HEARTBEAT.md",
+        "config/copilot-setup.md",
+        "config/project-setup.md",
+        "teams/ROSTER.md",
+        "memory/user_commands.jsonl",
+        "memory/budget_tracker.json"
+      ],
+      "neverRAG": true
+    }
+  },
+  "rag": {
+    "enabled": true,
+    "backend": "devrag",
+    "devrag": {
+      "indexDir": "rag/index",
+      "embeddingModel": "all-MiniLM-L6-v2",
+      "device": "mps",
+      "mpsFallback": true,
+      "topK": 5,
+      "scoreThreshold": 0.65,
+      "chunkSize": 512,
+      "chunkOverlap": 64
+    },
+    "indexable": [
+      "chains/*/SKILL.md",
+      "shared/artifacts/**",
+      "shared/handoffs/**",
+      "chains/logs/**",
+      "research/**",
+      "code/**",
+      "reports/**",
+      "analysis/**",
+      "creative/**",
+      "security/**",
+      "optimization/**",
+      "teams/governance_log.md"
+    ],
+    "protected": [
+      "SOUL.md",
+      "USER.md",
+      "GOVERNANCE.md",
+      "IDENTITY.md",
+      "MEMORY.md",
+      "AGENTS.md",
+      "HEARTBEAT.md",
+      "CHAIN_REGISTRY.md",
+      "TOOLS.md",
+      "openclaw.json",
+      "config/**",
+      "teams/ROSTER.md",
+      "memory/**",
+      "scripts/**"
+    ],
+    "autoReindex": {
+      "enabled": true,
+      "watchPaths": ["shared/artifacts", "shared/handoffs", "research", "reports"],
+      "debounceSeconds": 30
+    }
+  }
+}
