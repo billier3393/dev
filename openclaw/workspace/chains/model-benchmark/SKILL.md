@@ -61,13 +61,16 @@ llama4-maverick: { MMLU: 85.2, price_in: 0.20 }
 ```
 입력 → 태스크 유형 분류:
   - coding → Haiku 4.5 (SWE 73.3%)
-  - math/physics → Kimi K2.5 (MATH 98%)
-  - reasoning/strategy → Kimi K2.5 (GPQA 87.6%)
-  - research/writing → Kimi K2.5 (MMLU 92%)
+  - math/physics (익명화 필수, PII 없는 순수 기술) → Kimi K2.5 (MATH 98%)
+  - reasoning/strategy → Haiku 4.5 (Anthropic 미국 서버, 안전)
+  - research/writing (PII 포함 가능) → Haiku 4.5 (안전)
   - bulk/format/ocr → Gemini Flash (최저가)
   - monitoring/logging → Gemini Flash (최저가)
   - security-audit → Haiku 4.5 (코드 분석)
   - testing → Haiku 4.5 (코드 실행)
+
+  ⚠️ Kimi K2.5는 PII가 없는 순수 수학/과학 태스크에만 사용.
+     CEO가 반드시 익명화 후 전달. 개인정보 포함 시 Haiku 4.5로 fallback.
 ```
 
 ### 2. 비용-성능 균형 계산

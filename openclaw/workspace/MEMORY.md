@@ -19,7 +19,7 @@
 
 ### 조직 구조 (v11)
 - 총관리자: 동우님
-- C-Suite: CEO(K2.5), CTO(Haiku), COO(Flash)
+- C-Suite: CEO(Haiku 4.5), CTO(Haiku 4.5), COO(Flash)
 - 실무팀 8개 (28에이전트)
 - 모델 3종: Kimi K2.5 / Claude Haiku 4.5 / Gemini 2.5 Flash
 - 월 예산: $50 USD (일일 soft $2, hard $5)
