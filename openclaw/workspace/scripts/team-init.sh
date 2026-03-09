@@ -1,15 +1,56 @@
 #!/bin/bash
 set -euo pipefail
-echo "🏢 OpenClaw 만능 팀 초기화 (v11 ChatChain)"
-echo "============================================"
 
-# 디렉토리 생성
-DIRS=(raw_pdfs ocr_output study_notes problems code research docs reports data analysis creative security tests test_reports optimization chains teams)
-for d in "${DIRS[@]}"; do
+echo "🏢 OpenClaw 만능 팀 초기화 (v11 ChatChain + Multi-Workspace)"
+echo "=============================================================="
+
+# 워크스페이스 디렉토리 생성 (openclaw.json과 동기화)
+BASE_DIRS=(
+  agents
+  shared/messages
+  shared/locks
+  shared/batch_queue
+  shared/batch_results
+  shared/handoffs
+  shared/artifacts
+  memory
+  chains
+  teams
+  security
+)
+
+for d in "${BASE_DIRS[@]}"; do
   mkdir -p "$d"
 done
 
-echo "📁 디렉토리 생성 완료 (${#DIRS[@]}개)"
+# 개인 작업공간 구조 생성
+AGENTS=(
+  ceo cto coo
+  research-lead research-web research-analyst
+  dev-lead dev-backend dev-frontend dev-automation
+  docs-lead docs-writer docs-formatter
+  data-lead data-engineer data-viz
+  creative-lead creative-content creative-design
+  security-lead security-auditor security-monitor
+  testing-lead testing-functional testing-validator
+  optim-lead optim-perf optim-process
+)
+
+PERSONAL_SUBDIRS=(inbox outbox workspace scratch)
+
+for agent in "${AGENTS[@]}"; do
+  for sub in "${PERSONAL_SUBDIRS[@]}"; do
+    mkdir -p "agents/${agent}/${sub}"
+  done
+done
+
+# 운영 파일 초기화 (없는 경우에만 생성)
+[ -f memory/budget_tracker.json ] || touch memory/budget_tracker.json
+[ -f memory/user_commands.jsonl ] || touch memory/user_commands.jsonl
+[ -f security/injection_log.jsonl ] || touch security/injection_log.jsonl
+
+echo "📁 기본 디렉토리 생성 완료 (${#BASE_DIRS[@]}개)"
+echo "👤 개인 워크스페이스 생성 완료 (${#AGENTS[@]}명 x ${#PERSONAL_SUBDIRS[@]}개)"
 
 # 팀 현황 확인
 echo ""
@@ -26,5 +67,5 @@ echo "  최적화팀: Lead + Perf + Process (3명)"
 echo ""
 echo "  총 에이전트: 28명"
 echo ""
-echo "✅ 팀 시작 준비 완료"
+echo "✅ 팀 시작 준비 완료 (openclaw onboard 적용 가능 상태)"
 echo "👑 동우님, 명령을 내려주세요."
