@@ -7,6 +7,12 @@
 .env.*
 !.env.example
 
+# sed 백업 파일 — API 키 노출 위험
+*.bak
+
+# 팀별 API 키 설정 Excel — 로컬 전용
+team-config.xlsx
+
 # 암호화된 메모리 파일
 openclaw/workspace/memory/*.json
 openclaw/workspace/memory/*.jsonl

@@ -17,7 +17,7 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 # ── 지원 모델 전역 상수 (단일 수정 지점) ───────────────────────────────────────
-readonly MODEL_HAIKU="claude-haiku-4-6"
+readonly MODEL_HAIKU="claude-haiku-4-5-20251001"   # Haiku 4.6은 미출시; 현재 최신: 4.5
 readonly MODEL_SONNET="claude-sonnet-4-6"
 readonly MODEL_OPUS="claude-opus-4-6"
 readonly MODEL_GEMINI_25_FLASH="gemini-2.5-flash"
@@ -481,7 +481,7 @@ openclaw/workspace/
 
 | 용도 | 모델 | 이유 |
 |------|------|------|
-| 학습·단순 질문 | Haiku 4.6 (`claude-haiku-4-6`) | 가장 저렴 |
+| 학습·단순 질문 | Haiku 4.5 (`claude-haiku-4-5-20251001`) | 가장 저렴 |
 | 일반 코딩·균형 | Sonnet 4.6 (`claude-sonnet-4-6`) | 기본값 |
 | 복잡한 설계·디버깅 | Opus 4.6 (`claude-opus-4-6`) | 최고 성능 |
 | 빠른 데이터 분석 | Gemini 2.5 Flash | 속도 최적화 |
@@ -613,8 +613,8 @@ cat > "$EXCEL_HELPER" << 'PYEOF'
 import sys, re, json
 
 MODEL_MAP = {
-    "haiku 4.6":        ("claude-haiku-4-6",   "anthropic"),
-    "sonnet 4.6":       ("claude-sonnet-4-6",  "anthropic"),
+    "haiku 4.5":        ("claude-haiku-4-5-20251001", "anthropic"),  # 4.6 미출시
+    "sonnet 4.6":       ("claude-sonnet-4-6",          "anthropic"),
     "opus 4.6":         ("claude-opus-4-6",    "anthropic"),
     "gemini 2.5 flash": ("gemini-2.5-flash",   "google"),
     "gemini 3 flash":   ("gemini-3-flash",     "google"),
@@ -625,7 +625,7 @@ MODEL_MAP = {
     "gpt 5.4":          ("gpt-5.4",            "openai"),
 }
 MODEL_LABELS = [
-    "Haiku 4.6", "Sonnet 4.6", "Opus 4.6",
+    "Haiku 4.5", "Sonnet 4.6", "Opus 4.6",
     "Gemini 2.5 Flash", "Gemini 3 Flash", "Gemini 3 Pro",
     "GPT-4o", "GPT-5.4",
 ]
@@ -712,7 +712,7 @@ def create_template(path):
         "",
         "── 모델 ID 매핑 ──",
     ] + [f"  {label:<22} → {MODEL_MAP[label.lower()][0]}  ({MODEL_MAP[label.lower()][1]})"
-         for label in MODEL_LABELS]
+         for label in MODEL_LABELS if label.lower() in MODEL_MAP]
 
     for i, line in enumerate(guide, 1):
         cell = ws2.cell(i, 1, line)
@@ -891,7 +891,7 @@ echo -e "${BOLD}📊 팀별 모델 설정 (Excel):${NC}"
 echo "  1) ${EXCEL_FILE} 열기"
 echo "  2) 각 팀의 모델(드롭다운)과 API 키 입력"
 echo "  3) 저장 후 setup-mac.sh 재실행 → 팀별 함수 자동 등록"
-echo "  지원 모델: Haiku 4.6 / Sonnet 4.6 / Opus 4.6"
+echo "  지원 모델: Haiku 4.5 / Sonnet 4.6 / Opus 4.6"
 echo "            Gemini 2.5 Flash / Gemini 3 Flash / Gemini 3 Pro"
 echo "            GPT-4o / GPT-5.4"
 echo ""
