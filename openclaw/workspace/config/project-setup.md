@@ -1,5 +1,7 @@
 # 프로젝트 디렉토리 초기 설정
 
+> 처음이라면: [`QUICKSTART.md`](./QUICKSTART.md) 를 먼저 읽으세요 (15분 완성 가이드)
+
 ```bash
 cd ~/openclaw/workspace
 bash scripts/team-init.sh
