@@ -1,5 +1,6 @@
 # HANDOFF.md — 세션 인수인계장
-> 저장일시: 2026-03-09 | 브랜치: `claude/claude-code-mac-guide-PqRs1`
+> 저장일시: 2026-03-09 (업데이트) | 브랜치: `claude/claude-code-mac-guide-PqRs1`
+> 최신 커밋: `f1f951f`
 
 ---
 
@@ -22,7 +23,21 @@
 
 ---
 
-## 2. 진행 중인 작업
+## 2. 이번 세션 추가 작업 (커밋 `f1f951f`)
+
+**Excel → OpenClaw 에이전트 + .env 자동 적용 구현**
+
+| 구성요소 | 내용 |
+|----------|------|
+| `OPENCLAW_MODEL_MAP` | Excel 레이블 → `openclaw.json` 모델 문자열 매핑 |
+| `OPENCLAW_AGENTS` | 28개 에이전트 기본 정보 (사전 입력용) |
+| `apply_openclaw()` | OpenClaw 에이전트 시트 → `openclaw.json` 반영 (백업/복원 포함) |
+| `update_dotenv()` | 팀별 API 키 → `.env` upsert |
+| `🤖 OpenClaw 에이전트` 시트 | Excel 신규 시트, 28개 에이전트 pre-fill, 드롭다운 |
+| 팀별 설정 F열 | Kimi API Key 열 추가 (메모는 G열로 이동) |
+| bash 흐름 | Excel 읽기 → Shell 함수 → openclaw.json → .env 순서 자동 적용 |
+
+## 3. 진행 중인 작업
 
 없음 — 이번 세션 작업 모두 완료 및 push됨.
 
