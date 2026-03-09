@@ -18,4 +18,4 @@ user-invocable: true
 - `teams/governance_log.md` → 승인 이력
 - `security/injection_log.jsonl` → 보안 이벤트
 
-## 모델: Kimi K2.5 (고품질 글쓰기)
+## 모델: Gemini 2.5 Flash (보고서 작성 — Privacy-Safe, 대량 텍스트 저비용)
