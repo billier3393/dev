@@ -16,6 +16,17 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
+# ── 지원 모델 전역 상수 (단일 수정 지점) ───────────────────────────────────────
+readonly MODEL_HAIKU="claude-haiku-4-6"
+readonly MODEL_SONNET="claude-sonnet-4-6"
+readonly MODEL_OPUS="claude-opus-4-6"
+readonly MODEL_GEMINI_25_FLASH="gemini-2.5-flash"
+readonly MODEL_GEMINI_3_FLASH="gemini-3-flash"
+readonly MODEL_GEMINI_3_PRO="gemini-3-pro"
+readonly MODEL_GPT4O="gpt-4o"
+readonly MODEL_GPT54="gpt-5.4"
+readonly MODEL_DEFAULT="$MODEL_SONNET"   # 기본 모델 (비용 절감 목적)
+
 # ── 유틸 함수 ─────────────────────────────────────────────────────────────────
 info()    { echo -e "${BLUE}[INFO]${NC}  $*"; }
 success() { echo -e "${GREEN}[✅]${NC}   $*"; }
@@ -141,13 +152,17 @@ if $SETUP_API; then
 
     # 기존 설정 중복 방지
     if grep -q "ANTHROPIC_API_KEY_STORED" "$SHELL_RC" 2>/dev/null; then
-      # 기존 줄 교체
+      # 기존 줄 교체 (.bak 즉시 삭제 — 키 노출 방지)
       sed -i.bak "s|export ANTHROPIC_API_KEY_STORED=.*|export ANTHROPIC_API_KEY_STORED=\"${API_KEY_STORED}\"|" "$SHELL_RC"
+      rm -f "${SHELL_RC}.bak"
     else
       echo "" >> "$SHELL_RC"
       echo "# Claude Code API 계정 키" >> "$SHELL_RC"
       echo "export ANTHROPIC_API_KEY_STORED=\"${API_KEY_STORED}\"" >> "$SHELL_RC"
     fi
+    warn "보안 주의: API 키가 ${SHELL_RC} 에 평문 저장됩니다."
+    warn "  - 해당 파일의 권한을 확인하세요: chmod 600 ${SHELL_RC}"
+    warn "  - 공용 머신에서는 사용 후 키를 삭제하세요."
     success "API 키 저장 완료 (${SHELL_RC})"
   else
     warn "API 키가 입력되지 않았습니다. 나중에 수동으로 설정하세요:"
@@ -164,10 +179,11 @@ GLOBAL_CLAUDE="$HOME/.claude"
 mkdir -p "$GLOBAL_CLAUDE/commands"
 mkdir -p "$GLOBAL_CLAUDE/hooks"
 
-# ── settings.json ─────────────────────────────────────────────────────────────
-cat > "$GLOBAL_CLAUDE/settings.json" << 'SETTINGS_EOF'
+# ── settings.json (전역) ───────────────────────────────────────────────────────
+# 주의: 단일 따옴표 없이 heredoc → ${MODEL_DEFAULT} 변수 확장 허용
+cat > "$GLOBAL_CLAUDE/settings.json" << SETTINGS_EOF
 {
-  "model": "claude-sonnet-4-5",
+  "model": "${MODEL_DEFAULT}",
   "toolSearch": "auto",
   "permissions": {
     "allow": [],
@@ -202,9 +218,9 @@ cat > "$GLOBAL_CLAUDE/settings.json" << 'SETTINGS_EOF'
   }
 }
 SETTINGS_EOF
-success "settings.json 생성 완료"
-info "  - 기본 모델: Sonnet (Opus 무단 사용 방지)"
-info "  - MCP Tool Search: auto (컨텍스트 낭비 방지)"
+success "settings.json 생성 완료 (기본 모델: ${MODEL_DEFAULT})"
+info "  - toolSearch: auto — MCP 도구가 컨텍스트 3% 초과 시 온디맨드 로드"
+info "  - Opus 무단 실행 방지 (기본값 Sonnet 고정)"
 info "  - 작업 완료 시 macOS 알림 훅 등록"
 
 # ── 커스텀 커맨드: /changelog ──────────────────────────────────────────────────
@@ -398,7 +414,7 @@ function claude-api() {
 # Opus 모델로 Claude Code 실행 (복잡한 설계/디버깅용)
 function claude-opus() {
   echo "🧠 Opus 모델로 실행 중... (비용 주의)"
-  claude --model claude-opus-4-6 "\$@"
+  claude --model ${MODEL_OPUS} "\$@"
 }
 
 # 현재 Claude 계정 상태 확인
@@ -465,16 +481,38 @@ openclaw/workspace/
 
 | 용도 | 모델 | 이유 |
 |------|------|------|
-| 학습·단순 질문 | Haiku 4.5 | 가장 저렴 |
-| 일반 코딩·균형 | Sonnet 4.5 | 기본값 |
-| 복잡한 설계·디버깅 | Opus 4.6 | 최고 성능 |
+| 학습·단순 질문 | Haiku 4.6 (`claude-haiku-4-6`) | 가장 저렴 |
+| 일반 코딩·균형 | Sonnet 4.6 (`claude-sonnet-4-6`) | 기본값 |
+| 복잡한 설계·디버깅 | Opus 4.6 (`claude-opus-4-6`) | 최고 성능 |
+| 빠른 데이터 분석 | Gemini 2.5 Flash | 속도 최적화 |
+| 고품질 추론 | GPT-5.4 / Gemini 3 Pro | 대안 선택지 |
 
 ### 개발 워크플로우
 
 1. **새 기능 시작 전**: Plan 모드 (Shift+Tab) 진입 → 계획 수립 → 승인 후 실행
-2. **컨텍스트 관리**: 30분마다 `/context` 확인 → 75% 이상 시 `/compact`
+2. **컨텍스트 관리**: `/context` 확인
+   - **30% 초과** → 불필요한 파일 참조 제거, 대화 요약
+   - **75% 초과** → `/compact` 즉시 실행 (압축 안 하면 성능 저하)
 3. **세션 종료 전**: `/clear` 실행 필수 (컨텍스트 로트 방지)
 4. **세션 인수인계**: `/handoff` 로 HANDOFF.md 저장
+
+### Tool Search (MCP 컨텍스트 절약)
+
+> **문제**: MCP 연결만 해도 컨텍스트 윈도우의 최대 30%를 선점
+> **해결**: `toolSearch: auto` 설정 → MCP 도구가 3% 초과 시 온디맨드 로드
+
+```
+MCP 도구 3% 초과 감지
+       ↓
+Tool Search 자동 활성화
+       ↓
+필요한 도구만 그 순간에 로드 (사용 안 할 때는 0% 점유)
+```
+
+**스킬(Skill) 활용 원칙** — 대용량 참고 자료는 CLAUDE.md에 넣지 말 것:
+- ❌ CLAUDE.md에 Next.js 공식 문서 전체 삽입 → 매 작업마다 전부 로드
+- ✅ `/skills/nextjs-docs.md` 스킬 파일로 분리 → 필요 시에만 점진적 로딩
+- ✅ Playwright MCP 23개 도구를 항상 로드 대신, "웹 자동화 필요 시" 스킬로 호출
 
 ### 개발 규칙
 
@@ -483,13 +521,21 @@ openclaw/workspace/
 - Kimi K2.5 에이전트에는 PII(개인정보) 전달 금지
 - 외부 데이터 전송 전 반드시 사용자 승인 요청
 
+### 보안 체크리스트
+
+- [ ] API 키를 코드·CLAUDE.md에 직접 삽입하지 않았는가?
+- [ ] `.gitignore`에 `.env`, `*.bak`, `team-config.xlsx` 포함됐는가?
+- [ ] 공용 머신에서 `claude auth logout` 및 API 키 환경변수 삭제했는가?
+- [ ] MCP 서버가 외부로 데이터를 전송하지 않는지 확인했는가?
+
 ### 자주 하는 실수 방지
 
 1. ❌ CLAUDE.md를 500줄 이상으로 늘리지 말 것 → 나머지는 스킬 파일로 분리
 2. ❌ Plan 모드 없이 바로 코드 생성하지 말 것
 3. ❌ `/clear` 없이 새 기능 개발 시작하지 말 것
-4. ❌ MCP 도구 설치 후 Tool Search 활성화 잊지 말 것
+4. ❌ MCP 도구 설치 후 `toolSearch: auto` 확인 잊지 말 것
 5. ❌ openclaw.json 수정 전 백업 생략하지 말 것
+6. ❌ 컨텍스트 30% 초과 상태로 장시간 작업하지 말 것
 
 ### 커스텀 커맨드
 
@@ -511,9 +557,9 @@ mkdir -p "$PROJECT_CLAUDE/commands"
 mkdir -p "$PROJECT_CLAUDE/hooks"
 
 # 프로젝트 수준 settings.json (전역 설정 상속 + 오버라이드)
-cat > "$PROJECT_CLAUDE/settings.json" << 'PROJ_SETTINGS_EOF'
+cat > "$PROJECT_CLAUDE/settings.json" << PROJ_SETTINGS_EOF
 {
-  "model": "claude-sonnet-4-5",
+  "model": "${MODEL_DEFAULT}",
   "toolSearch": "auto",
   "env": {
     "CLAUDE_TEAM_ENABLED": "0"
