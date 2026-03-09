@@ -615,21 +615,70 @@ import sys, re, json
 MODEL_MAP = {
     "haiku 4.5":        ("claude-haiku-4-5-20251001", "anthropic"),  # 4.6 미출시
     "sonnet 4.6":       ("claude-sonnet-4-6",          "anthropic"),
-    "opus 4.6":         ("claude-opus-4-6",    "anthropic"),
-    "gemini 2.5 flash": ("gemini-2.5-flash",   "google"),
-    "gemini 3 flash":   ("gemini-3-flash",     "google"),
-    "gemini 3 pro":     ("gemini-3-pro",       "google"),
-    "gpt-4o":           ("gpt-4o",             "openai"),
-    "gpt 4o":           ("gpt-4o",             "openai"),
-    "gpt-5.4":          ("gpt-5.4",            "openai"),
-    "gpt 5.4":          ("gpt-5.4",            "openai"),
+    "opus 4.6":         ("claude-opus-4-6",            "anthropic"),
+    "gemini 2.5 flash": ("gemini-2.5-flash-preview-05-20", "google"),
+    "gemini 3 flash":   ("gemini-3-flash",             "google"),
+    "gemini 3 pro":     ("gemini-3-pro",               "google"),
+    "kimi k2.5":        ("kimi-k2.5",                  "kimi"),   # ⚠️ PII 금지 (중국 서버)
+    "gpt-4o":           ("gpt-4o",                     "openai"),
+    "gpt 4o":           ("gpt-4o",                     "openai"),
+    "gpt-5.4":          ("gpt-5.4",                    "openai"),
+    "gpt 5.4":          ("gpt-5.4",                    "openai"),
 }
 MODEL_LABELS = [
     "Haiku 4.5", "Sonnet 4.6", "Opus 4.6",
     "Gemini 2.5 Flash", "Gemini 3 Flash", "Gemini 3 Pro",
+    "Kimi K2.5",
     "GPT-4o", "GPT-5.4",
 ]
-PLACEHOLDERS = {"sk-ant-여기에입력", "sk-여기에입력", "AIzaSy-여기에입력"}
+PLACEHOLDERS = {"sk-ant-여기에입력", "sk-여기에입력", "AIzaSy-여기에입력", "kimi-여기에입력"}
+
+# Excel 레이블 → openclaw.json 내부 model 문자열 변환
+OPENCLAW_MODEL_MAP = {
+    "haiku 4.5":        "anthropic/claude-haiku-4.5",
+    "sonnet 4.6":       "anthropic/claude-sonnet-4.6",
+    "opus 4.6":         "anthropic/claude-opus-4.6",
+    "gemini 2.5 flash": "google/gemini-2.5-flash",
+    "gemini 3 flash":   "google/gemini-3-flash",
+    "gemini 3 pro":     "google/gemini-3-pro",
+    "kimi k2.5":        "kimi/kimi-k2.5",
+    "gpt-4o":           "openai/gpt-4o",
+    "gpt 4o":           "openai/gpt-4o",
+    "gpt-5.4":          "openai/gpt-5.4",
+    "gpt 5.4":          "openai/gpt-5.4",
+}
+
+# 28개 에이전트 기본 정보 (id, 팀, 역할, 현재모델레이블, PII주의)
+OPENCLAW_AGENTS = [
+    ("ceo",               "C-Suite",  "최고경영자",       "Haiku 4.5",        ""),
+    ("cto",               "C-Suite",  "기술이사",         "Haiku 4.5",        ""),
+    ("coo",               "C-Suite",  "운영이사",         "Gemini 2.5 Flash", ""),
+    ("research-lead",     "Research", "리서치 리드",      "Haiku 4.5",        ""),
+    ("research-web",      "Research", "웹 리서처",        "Gemini 2.5 Flash", ""),
+    ("research-analyst",  "Research", "데이터 분석가",    "Kimi K2.5",        "⚠️ PII 금지"),
+    ("dev-lead",          "Dev",      "개발 리드",        "Haiku 4.5",        ""),
+    ("dev-backend",       "Dev",      "백엔드",           "Haiku 4.5",        ""),
+    ("dev-frontend",      "Dev",      "프론트엔드",       "Haiku 4.5",        ""),
+    ("dev-automation",    "Dev",      "자동화",           "Gemini 2.5 Flash", ""),
+    ("docs-lead",         "Docs",     "문서 리드",        "Gemini 2.5 Flash", ""),
+    ("docs-writer",       "Docs",     "문서 작성자",      "Gemini 2.5 Flash", ""),
+    ("docs-formatter",    "Docs",     "문서 포맷터",      "Gemini 2.5 Flash", ""),
+    ("data-lead",         "Data",     "데이터 리드",      "Haiku 4.5",        ""),
+    ("data-engineer",     "Data",     "데이터 엔지니어",  "Haiku 4.5",        ""),
+    ("data-viz",          "Data",     "데이터 시각화",    "Gemini 2.5 Flash", ""),
+    ("creative-lead",     "Creative", "크리에이티브 리드","Gemini 2.5 Flash", ""),
+    ("creative-content",  "Creative", "콘텐츠",           "Gemini 2.5 Flash", ""),
+    ("creative-design",   "Creative", "디자인",           "Gemini 2.5 Flash", ""),
+    ("security-lead",     "Security", "보안 리드",        "Haiku 4.5",        ""),
+    ("security-auditor",  "Security", "보안 감사자",      "Haiku 4.5",        ""),
+    ("security-monitor",  "Security", "보안 모니터",      "Gemini 2.5 Flash", ""),
+    ("testing-lead",      "Testing",  "테스팅 리드",      "Haiku 4.5",        ""),
+    ("testing-functional","Testing",  "기능 테스터",      "Haiku 4.5",        ""),
+    ("testing-validator", "Testing",  "검증자",           "Kimi K2.5",        "⚠️ PII 금지"),
+    ("optim-lead",        "Optim",    "최적화 리드",      "Gemini 2.5 Flash", ""),
+    ("optim-perf",        "Optim",    "성능 최적화",      "Gemini 2.5 Flash", ""),
+    ("optim-process",     "Optim",    "프로세스 최적화",  "Gemini 2.5 Flash", ""),
+]
 
 def safe_func_name(name):
     """팀명을 shell 함수명으로 변환"""
@@ -644,8 +693,8 @@ def create_template(path):
     ws = wb.active
     ws.title = "팀별 설정"
 
-    # 열 너비
-    for col, w in zip("ABCDEF", [20, 20, 52, 52, 52, 25]):
+    # 열 너비: A=팀명, B=모델, C=Anthropic, D=OpenAI, E=Google, F=Kimi, G=메모
+    for col, w in zip("ABCDEFG", [20, 20, 52, 52, 52, 52, 20]):
         ws.column_dimensions[col].width = w
 
     # 헤더
@@ -657,6 +706,7 @@ def create_template(path):
         "Anthropic API Key (Claude용)",
         "OpenAI API Key (GPT용)",
         "Google API Key (Gemini용)",
+        "Kimi API Key (Kimi K2.5용)",
         "메모",
     ]
     ws.row_dimensions[1].height = 36
@@ -664,7 +714,7 @@ def create_template(path):
         cell = ws.cell(1, c, h)
         cell.fill = hdr_fill; cell.font = hdr_font; cell.alignment = center
 
-    # 모델 드롭다운
+    # 모델 드롭다운 (B열)
     dv = DataValidation(
         type="list",
         formula1='"' + ','.join(MODEL_LABELS) + '"',
@@ -673,13 +723,14 @@ def create_template(path):
     ws.add_data_validation(dv)
     dv.sqref = "B2:B200"
 
-    # 샘플 데이터
+    # 샘플 데이터 (G열=메모)
     alt = PatternFill("solid", fgColor="EBF3FF")
     samples = [
-        ("개발팀",      "Sonnet 4.6",       "sk-ant-여기에입력", "",                  "",                   "일반 개발 작업"),
-        ("AI리서치팀",  "Opus 4.6",         "sk-ant-여기에입력", "",                  "",                   "복잡한 분석·설계"),
-        ("프론트팀",    "GPT-4o",           "",                  "sk-여기에입력",      "",                   "GPT 선호 팀"),
-        ("데이터팀",    "Gemini 2.5 Flash",  "",                  "",                  "AIzaSy-여기에입력",  "빠른 데이터 분석"),
+        ("개발팀",       "Sonnet 4.6",       "sk-ant-여기에입력", "",              "",                  "",                "일반 개발 작업"),
+        ("AI리서치팀",   "Opus 4.6",         "sk-ant-여기에입력", "",              "",                  "",                "복잡한 분석·설계"),
+        ("프론트팀",     "GPT-4o",           "",                  "sk-여기에입력", "",                  "",                "GPT 선호 팀"),
+        ("데이터팀",     "Gemini 2.5 Flash", "",                  "",              "AIzaSy-여기에입력", "",                "빠른 데이터 분석"),
+        ("수학·과학팀",  "Kimi K2.5",        "",                  "",              "",                  "kimi-여기에입력", "⚠️ PII 금지"),
     ]
     for i, row in enumerate(samples, 2):
         ws.row_dimensions[i].height = 20
@@ -689,26 +740,71 @@ def create_template(path):
                 cell.fill = alt
             cell.alignment = Alignment(vertical="center")
 
-    # 안내 시트
+    # ── OpenClaw 에이전트 시트 (28개 에이전트 사전 입력) ─────────────────────────
+    ws_oc = wb.create_sheet("🤖 OpenClaw 에이전트")
+    for col, w in zip("ABCDEF", [22, 12, 18, 20, 20, 14]):
+        ws_oc.column_dimensions[col].width = w
+
+    oc_hdr_fill = PatternFill("solid", fgColor="0D3B66")
+    oc_headers  = ["에이전트 ID", "팀", "역할", "현재 모델", "변경 모델 (선택)", "PII 주의"]
+    ws_oc.row_dimensions[1].height = 30
+    for c, h in enumerate(oc_headers, 1):
+        cell = ws_oc.cell(1, c, h)
+        cell.fill = oc_hdr_fill; cell.font = hdr_font; cell.alignment = center
+
+    # 변경 모델 드롭다운 (E열, Kimi 포함, OpenClaw 호환 모델만)
+    oc_model_labels = ["Haiku 4.5", "Gemini 2.5 Flash", "Kimi K2.5",
+                       "Sonnet 4.6", "Opus 4.6", "Gemini 3 Flash", "Gemini 3 Pro"]
+    dv_oc = DataValidation(
+        type="list",
+        formula1='"' + ','.join(oc_model_labels) + '"',
+        allow_blank=True, showDropDown=False,
+    )
+    ws_oc.add_data_validation(dv_oc)
+    dv_oc.sqref = "E2:E50"
+
+    gray_fill = PatternFill("solid", fgColor="D9D9D9")
+    warn_fill  = PatternFill("solid", fgColor="FFE0B2")
+    alt_oc     = PatternFill("solid", fgColor="F0F4FF")
+    for i, (aid, team, role, cur_model, pii) in enumerate(OPENCLAW_AGENTS, 2):
+        ws_oc.row_dimensions[i].height = 18
+        row_data = [aid, team, role, cur_model, "", pii]
+        for c, v in enumerate(row_data, 1):
+            cell = ws_oc.cell(i, c, v)
+            cell.alignment = Alignment(vertical="center")
+            if c == 4:  # 현재 모델 열 — 읽기 전용 표시 (회색)
+                cell.fill = gray_fill
+                cell.font = Font(color="555555")
+            elif pii and c == 6:  # PII 경고 열 — 주황
+                cell.fill = warn_fill
+                cell.font = Font(bold=True, color="BF360C")
+            elif i % 2 == 0:
+                cell.fill = alt_oc
+
+    # ── 안내 시트 ──────────────────────────────────────────────────────────────
     ws2 = wb.create_sheet("📖 사용 안내")
-    ws2.column_dimensions['A'].width = 72
+    ws2.column_dimensions['A'].width = 80
     guide = [
-        "=== Claude Code 팀별 설정 파일 사용 안내 ===",
+        "=== Claude Code 팀별 설정 파일 사용 안내 (v11) ===",
         "",
-        "1. '팀별 설정' 시트에 각 팀 정보를 입력하세요.",
-        "2. 팀명: 영문·한글 모두 가능  (예: dev팀, AI팀, backend)",
-        "3. 모델: 드롭다운에서 선택하세요.",
-        "4. API Key: 해당 모델 제공사 키만 입력하면 됩니다.",
+        "【팀별 설정 시트】",
+        "1. 팀명: 영문·한글 모두 가능  (예: dev팀, AI팀, backend)",
+        "2. 모델: 드롭다운에서 선택하세요.",
+        "3. API Key: 해당 모델 제공사 키만 입력하면 됩니다.",
         "   ├ Claude(Haiku·Sonnet·Opus) → Anthropic API Key",
         "   ├ GPT-4o·GPT-5.4           → OpenAI API Key",
-        "   └ Gemini 2.5/3 Flash·Pro   → Google API Key",
+        "   ├ Gemini 2.5/3 Flash·Pro   → Google API Key",
+        "   └ Kimi K2.5                → Kimi API Key  ⚠️ PII 전달 금지",
         "",
-        "5. 저장 후 setup-mac.sh 를 다시 실행하면 팀별 함수가 등록됩니다.",
+        "4. 저장 후 setup-mac.sh 재실행 → 팀별 Shell 함수 등록 + .env 업데이트",
         "",
-        "등록 후 사용 예:",
-        "  claude-개발팀          → 개발팀 설정으로 Claude Code 실행",
-        "  claude-AI리서치팀      → AI리서치팀 설정으로 실행",
-        "  claude-team-list       → 등록된 팀 목록 확인",
+        "【OpenClaw 에이전트 시트】",
+        "5. '변경 모델' 열에서 드롭다운으로 에이전트 모델을 변경하세요.",
+        "6. 저장 후 setup-mac.sh 재실행 → openclaw.json 자동 업데이트",
+        "   ※ 변경 전 openclaw.json.bak 자동 백업",
+        "",
+        "⚠️  Kimi K2.5 에이전트(research-analyst, testing-validator):",
+        "    개인정보(PII)를 절대 전달하지 마세요. (중국 서버)",
         "",
         "── 모델 ID 매핑 ──",
     ] + [f"  {label:<22} → {MODEL_MAP[label.lower()][0]}  ({MODEL_MAP[label.lower()][1]})"
@@ -718,8 +814,10 @@ def create_template(path):
         cell = ws2.cell(i, 1, line)
         if line.startswith("==="):
             cell.font = Font(bold=True, size=13)
-        elif line.startswith("──"):
+        elif line.startswith("──") or line.startswith("【"):
             cell.font = Font(bold=True)
+        elif line.startswith("⚠️"):
+            cell.font = Font(bold=True, color="BF360C")
 
     wb.save(path)
     print(f"CREATED:{path}")
@@ -740,6 +838,7 @@ def read_config(path):
         anthropic_key = str(row[2] or "").strip()
         openai_key    = str(row[3] or "").strip()
         google_key    = str(row[4] or "").strip()
+        kimi_key      = str(row[5] or "").strip()  # F열 (v11 추가)
 
         key = model_label.lower()
         if key not in MODEL_MAP:
@@ -752,11 +851,14 @@ def read_config(path):
         elif provider == "openai"    and openai_key    and openai_key    not in PLACEHOLDERS:
             api_key, key_var = openai_key,    "OPENAI_API_KEY"
         elif provider == "google"    and google_key    and google_key    not in PLACEHOLDERS:
-            api_key, key_var = google_key,    "GOOGLE_API_KEY"
+            api_key, key_var = google_key,    "GOOGLE_AI_API_KEY"
+        elif provider == "kimi"      and kimi_key      and kimi_key      not in PLACEHOLDERS:
+            api_key, key_var = kimi_key,      "KIMI_API_KEY"
         else:
             api_key, key_var = "", ("ANTHROPIC_API_KEY" if provider=="anthropic"
-                                    else "OPENAI_API_KEY" if provider=="openai"
-                                    else "GOOGLE_API_KEY")
+                                    else "OPENAI_API_KEY"    if provider=="openai"
+                                    else "KIMI_API_KEY"      if provider=="kimi"
+                                    else "GOOGLE_AI_API_KEY")
 
         func = safe_func_name(team_raw)
         team_names.append(func)
@@ -780,12 +882,106 @@ def read_config(path):
 
     print('\n'.join(lines))
 
+def apply_openclaw(excel_path, json_path):
+    """OpenClaw 에이전트 시트 → openclaw.json 에이전트 모델 업데이트"""
+    import json as jsonlib
+    from openpyxl import load_workbook
+    wb = load_workbook(excel_path)
+    if "🤖 OpenClaw 에이전트" not in wb.sheetnames:
+        print("SKIP:OpenClaw 에이전트 시트 없음")
+        return
+    ws = wb["🤖 OpenClaw 에이전트"]
+
+    # E열(인덱스4): 변경 모델 레이블 읽기
+    changes = {}
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        agent_id  = str(row[0] or "").strip()
+        new_label = str(row[4] or "").strip()
+        if not agent_id or not new_label:
+            continue
+        key = new_label.lower()
+        if key in OPENCLAW_MODEL_MAP:
+            changes[agent_id] = OPENCLAW_MODEL_MAP[key]
+
+    if not changes:
+        print("SKIP:변경할 에이전트 없음 ('변경 모델' 열을 채워주세요)")
+        return
+
+    with open(json_path, encoding="utf-8") as f:
+        config = jsonlib.load(f)
+
+    updated = 0
+    for agent in config.get("agents", {}).get("list", []):
+        aid = agent.get("id", "")
+        if aid in changes:
+            agent["model"] = changes[aid]
+            updated += 1
+
+    with open(json_path, "w", encoding="utf-8") as f:
+        jsonlib.dump(config, f, indent=2, ensure_ascii=False)
+    print(f"UPDATED:{updated}")
+
+
+def update_dotenv(excel_path, env_path):
+    """팀별 설정 시트 API 키 → .env 파일 upsert (실제 키만, 플레이스홀더 제외)"""
+    import os
+    from openpyxl import load_workbook
+    wb = load_workbook(excel_path)
+    ws = wb.active  # 팀별 설정
+
+    anthropic_keys, openai_keys, google_keys, kimi_keys = set(), set(), set(), set()
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        ak = str(row[2] or "").strip()
+        ok = str(row[3] or "").strip()
+        gk = str(row[4] or "").strip()
+        kk = str(row[5] or "").strip()
+        if ak and ak not in PLACEHOLDERS: anthropic_keys.add(ak)
+        if ok and ok not in PLACEHOLDERS: openai_keys.add(ok)
+        if gk and gk not in PLACEHOLDERS: google_keys.add(gk)
+        if kk and kk not in PLACEHOLDERS: kimi_keys.add(kk)
+
+    updates = {}
+    if anthropic_keys: updates["ANTHROPIC_API_KEY"]  = anthropic_keys.pop()
+    if openai_keys:    updates["OPENAI_API_KEY"]      = openai_keys.pop()
+    if google_keys:
+        g = google_keys.pop()
+        updates["GOOGLE_AI_API_KEY"] = g   # openclaw.json 용
+        updates["GOOGLE_API_KEY"]    = g   # 셸 함수 호환
+    if kimi_keys:      updates["KIMI_API_KEY"]        = kimi_keys.pop()
+
+    if not updates:
+        print("SKIP:실제 API 키가 없습니다 (플레이스홀더 제거 후 입력)")
+        return
+
+    # 기존 .env 읽기
+    existing = {}
+    if os.path.exists(env_path):
+        with open(env_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if "=" in line and not line.startswith("#"):
+                    k, v = line.split("=", 1)
+                    existing[k.strip()] = v.strip()
+
+    existing.update(updates)
+
+    with open(env_path, "w", encoding="utf-8") as f:
+        f.write("# .env — setup-mac.sh 자동 업데이트 (직접 수정 가능)\n")
+        for k, v in existing.items():
+            f.write(f"{k}={v}\n")
+    print(f"UPDATED:{len(updates)}")
+
+
 if __name__ == "__main__":
-    mode, path = sys.argv[1], sys.argv[2]
+    mode = sys.argv[1]
     if mode == "create":
-        create_template(path)
+        create_template(sys.argv[2])
     elif mode == "read":
-        read_config(path)
+        read_config(sys.argv[2])
+    elif mode == "openclaw":
+        apply_openclaw(sys.argv[2], sys.argv[3])   # excel_path, json_path
+    elif mode == "dotenv":
+        update_dotenv(sys.argv[2], sys.argv[3])     # excel_path, env_path
 PYEOF
 
 # ── openpyxl 확인 및 설치 ──────────────────────────────────────────────────────
@@ -841,6 +1037,38 @@ REMOVE_PY
       printf '%s\n' "$TEAM_SHELL" >> "$SHELL_RC"
       TEAM_COUNT=$(echo "$TEAM_SHELL" | grep -c "^function claude-" || true)
       success "팀별 함수 ${TEAM_COUNT}개 등록 완료 (claude-team-list 로 확인)"
+
+      # ── OpenClaw 에이전트 모델 업데이트 ────────────────────────────────────
+      OPENCLAW_JSON="$PROJECT_ROOT/openclaw/openclaw.json"
+      if [[ -f "$OPENCLAW_JSON" ]]; then
+        cp "$OPENCLAW_JSON" "$OPENCLAW_JSON.bak"
+        OC_RESULT=$(python3 "$EXCEL_HELPER" openclaw "$EXCEL_FILE" "$OPENCLAW_JSON" 2>&1)
+        if [[ "$OC_RESULT" == UPDATED:* ]]; then
+          COUNT="${OC_RESULT#UPDATED:}"
+          success "OpenClaw 에이전트 모델 ${COUNT}개 업데이트 → openclaw.json"
+        elif [[ "$OC_RESULT" == SKIP:* ]]; then
+          info "OpenClaw: ${OC_RESULT#SKIP:}"
+          rm -f "$OPENCLAW_JSON.bak"
+        else
+          warn "OpenClaw 업데이트 오류: $OC_RESULT"
+          cp "$OPENCLAW_JSON.bak" "$OPENCLAW_JSON"  # 백업 복원
+          warn "openclaw.json 원본으로 복원했습니다."
+        fi
+      else
+        info "openclaw/openclaw.json 없음 — OpenClaw 에이전트 업데이트 건너뜀"
+      fi
+
+      # ── .env API 키 업데이트 ────────────────────────────────────────────────
+      ENV_FILE="$PROJECT_ROOT/.env"
+      ENV_RESULT=$(python3 "$EXCEL_HELPER" dotenv "$EXCEL_FILE" "$ENV_FILE" 2>&1)
+      if [[ "$ENV_RESULT" == UPDATED:* ]]; then
+        COUNT="${ENV_RESULT#UPDATED:}"
+        success ".env API 키 ${COUNT}개 업데이트 완료"
+      elif [[ "$ENV_RESULT" == SKIP:* ]]; then
+        info ".env: ${ENV_RESULT#SKIP:}"
+      else
+        warn ".env 업데이트 오류: $ENV_RESULT"
+      fi
     fi
   fi
 else
@@ -893,7 +1121,8 @@ echo "  2) 각 팀의 모델(드롭다운)과 API 키 입력"
 echo "  3) 저장 후 setup-mac.sh 재실행 → 팀별 함수 자동 등록"
 echo "  지원 모델: Haiku 4.5 / Sonnet 4.6 / Opus 4.6"
 echo "            Gemini 2.5 Flash / Gemini 3 Flash / Gemini 3 Pro"
-echo "            GPT-4o / GPT-5.4"
+echo "            Kimi K2.5 (⚠️ PII 금지) / GPT-4o / GPT-5.4"
+echo "  ※ 'OpenClaw 에이전트' 시트에서 28개 에이전트 모델 변경 → openclaw.json 자동 반영"
 echo ""
 
 echo -e "${BOLD}💡 주요 커맨드 (Claude Code 내에서):${NC}"
